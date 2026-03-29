@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Post a Service</title></head>
+<body>
+<h1>Post a Service</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create Listing</button>
+</form>
+<a href="{% url 'listing_list' %}">Cancel</a>
+</body>
+</html>

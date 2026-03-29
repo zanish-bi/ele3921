@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>{{ listing.title }}</title></head>
+<body>
+<h1>{{ listing.title }}</h1>
+<p>Category: {{ listing.category.name }}</p>
+<p>Price: ${{ listing.price }}</p>
+<p>Type: {% if listing.is_remote %}Remote{% else %}In-person{% endif %}</p>
+<p>{{ listing.description }}</p>
+<p>Posted by: {{ listing.owner }}</p>
+{% if listing.is_active and user.is_authenticated %}
+<a href="{% url 'bid_create' listing.pk %}">Place a Bid</a>
+{% endif %}
+{% if bids is not None %}
+<h2>Bids ({{ bids|length }})</h2>
+{% for bid in bids %}
+<div>
+  <p>From: {{ bid.client }} | Price: ${{ bid.proposed_price }} | Status: {{ bid.status }}</p>
+  <p>{{ bid.message }}</p>
+  {% if bid.status == "pending" %}
+  <form method="post" action="{% url 'bid_accept' bid.pk %}">
+    {% csrf_token %}
+    <button type="submit">Accept</button>
+  </form>
+  <form method="post" action="{% url 'bid_reject' bid.pk %}">
+    {% csrf_token %}
+    <button type="submit">Reject</button>
+  </form>
+  {% endif %}
+</div>
+{% empty %}
+<p>No bids yet.</p>
+{% endfor %}
+{% endif %}
+<a href="{% url 'listing_list' %}">Back to Listings</a>
+</body>
+</html>

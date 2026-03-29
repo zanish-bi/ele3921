@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>Contract #{{ contract.pk }}</title></head>
+<body>
+<h1>Contract #{{ contract.pk }}</h1>
+<p>Status: {{ contract.status }}</p>
+<p>Student: {{ contract.student }}</p>
+<p>Client: {{ contract.client }}</p>
+<p>Agreed Price: ${{ contract.agreed_price }}</p>
+<p>Created: {{ contract.created_at }}</p>
+{% if contract.completed_at %}
+<p>Completed: {{ contract.completed_at }}</p>
+{% endif %}
+<h2>Payment</h2>
+<p>Amount: ${{ contract.payment.amount }} | Status: {{ contract.payment.status }}</p>
+{% if contract.status == "active" %}
+<form method="post" action="{% url 'contract_complete' contract.pk %}">
+  {% csrf_token %}
+  <button type="submit">Mark as Complete</button>
+</form>
+{% endif %}
+<h2>Service</h2>
+<p>{{ contract.bid.listing.title }}</p>
+<p>{{ contract.bid.message }}</p>
+<a href="{% url 'dashboard' %}">Dashboard</a>
+</body>
+</html>
