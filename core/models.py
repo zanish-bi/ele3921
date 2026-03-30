@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class UserProfile(models.Model):
     ROLE_CHOICES = [("student", "Student"), ("client", "Client")]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="userprofile")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     bio = models.TextField(blank=True)
     is_kyc_verified = models.BooleanField(default=False)

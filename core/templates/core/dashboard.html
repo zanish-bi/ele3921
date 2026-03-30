@@ -1,7 +1,40 @@
 <!DOCTYPE html>
 <html>
-<head><title>Dashboard</title></head>
+<head>
+    <title>Dashboard</title>
+</head>
 <body>
+{% if request.user.is_authenticated %}
+    <p>
+        Logged in as: {{ request.user.username }}
+        ({{ request.user.userprofile.get_role_display }})
+    </p>
+
+    <p>
+        KYC status:
+        {% if request.user.userprofile.is_kyc_verified %}
+            ✅ Verified
+        {% else %}
+            ❌ Not verified
+        {% endif %}
+    </p>
+
+    {% if not request.user.userprofile.is_kyc_verified %}
+        <form method="post" action="{% url 'verify_kyc' %}">
+            {% csrf_token %}
+            <button type="submit">Verify Account</button>
+        </form>
+    {% endif %}
+
+    <!-- 👇 LEGG DENNE TILBAKE -->
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+{% else %}
+    <p>Not logged in</p>
+{% endif %}
 <h1>Dashboard</h1>
 <h2>Contracts as Student</h2>
 {% for contract in student_contracts %}

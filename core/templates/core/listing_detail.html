@@ -9,8 +9,11 @@
 <p>{{ listing.description }}</p>
 <p>Posted by: {{ listing.owner }}</p>
 {% if listing.is_active and user.is_authenticated %}
-<a href="{% url 'bid_create' listing.pk %}">Place a Bid</a>
-{% endif %}
+
+{% if request.user.userprofile.role == "client" %}
+    <a href="{% url 'place_bid' listing.pk %}">Place a Bid</a>
+{% endif %}{% endif %}
+
 {% if bids is not None %}
 <h2>Bids ({{ bids|length }})</h2>
 {% for bid in bids %}

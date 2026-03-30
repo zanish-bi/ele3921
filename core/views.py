@@ -7,6 +7,9 @@ from django.utils import timezone
 from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment
 from .forms import BidForm, ServiceListingForm
 
+from .forms import UserRegisterForm
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 
 def listing_list(request):
     listings = ServiceListing.objects.filter(is_active=True).select_related("owner", "category")
@@ -154,3 +157,58 @@ def dashboard(request):
         "student_contracts": student_contracts,
         "client_contracts": client_contracts,
     })
+
+@login_required
+def place_bid(requst, pk):
+    listing = get_object_or_404(ServiceListing, pk=pk)
+    profile = get_object_or_404(UserProfile, user=request.user)
+    if request.method == "POST":
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid = form.save(commit=False)
+            bid.client = profile
+            bid.bid_listing = listing 
+            bid.save()
+            return redirect("listing_detail", pk=listing.pk)
+    else:
+        form = BidForm()
+
+    return render(request, "core/place_bid.html", {
+        "form": form,
+        "listing": listing,
+    })
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+
+            role = request.POST.get("role")
+
+            profile = user.userprofile
+            profile.role = role
+            profile.save()
+
+            login(request, user)
+
+            return redirect("dashboard")
+    else:
+        form = UserRegisterForm()
+
+    return render(request, "registration/register.html", {"form": form})
+
+
+@login_required
+def verify_kyc(request):
+    profile = request.user.userprofile
+    profile.is_kyc_verified = True
+    profile.save()
+
+    return redirect("dashboard")
+
+def home(request):
+    return render(request, "core/index.html")

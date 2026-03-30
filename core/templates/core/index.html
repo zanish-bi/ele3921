@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentGig</title>
+</head>
+<body>
+
+{% if request.user.is_authenticated %}
+    <p>
+        Logged in as: {{ request.user.username }} 
+        ({{ request.user.userprofile.role }})
+    </p>
+
+    <p>
+        KYC status: {{ request.user.userprofile.is_verified }}
+    </p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+{% else %}
+    <p>Not logged in</p>
+{% endif %}
+
+<h1>Welcome to studentgig</h1>
+<p>Now it works</p>
+
+</body>
+</html>
