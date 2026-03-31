@@ -4,6 +4,26 @@ This document tells you exactly what each member needs to build and how to plug 
 
 ---
 
+## What Is Already Done (Do Not Rebuild)
+
+| Feature | Status |
+|---|---|
+| All 7 data models | Done |
+| Django admin panel | Done |
+| Listing browse / detail / create views | Done |
+| Bid accept / reject views | Done |
+| Contract detail / complete views | Done |
+| Dashboard view | Done |
+| `/accounts/login/` and `/accounts/logout/` | Done — Django built-in auth wired up |
+| `/accounts/register/` | Done — `register` view in `core/views.py` |
+| `UserProfile` auto-created on every new `User` | Done — signal in `core/signals.py` |
+| `UserRegisterForm` with role selection | Done — in `core/forms.py` |
+| 8 initial categories loaded on first migrate | Done — migration 0003 |
+| `registration/login.html` template | Done |
+| `registration/register.html` template | Done |
+
+---
+
 ## Member 2 — Frontend Templates
 
 ### What's already done
@@ -11,10 +31,15 @@ All views exist and work. Minimal skeleton templates are in `core/templates/core
 
 ### Rules
 - Keep the same file names — the views reference these paths exactly
-- Do not rename URLs or add new URL patterns (talk to Member 1 if you need a new route)
+- Do not rename URLs or add new URL patterns (coordinate with Member 1 if you need a new route)
 - You can add a `base.html` and use `{% extends "core/base.html" %}` in each template
 - Use `{% url 'name' %}` for all links — never hardcode paths
 - All forms must include `{% csrf_token %}` inside `<form method="post">` tags
+
+### Available Categories
+
+8 categories are pre-loaded and ready to use in the listing creation form:
+`Design`, `Programming`, `Tutoring`, `Writing`, `Video & Animation`, `Translation`, `Marketing`, `Data & Research`
 
 ### Template file locations
 
@@ -42,7 +67,7 @@ All templates live in `core/templates/core/`. The six files you need to style ar
 
 **What to build:**
 - Full listing details
-- A "Place a Bid" link to `{% url 'bid_create' listing.pk %}` — show only if `listing.is_active and user.is_authenticated`
+- A "Place a Bid" link to `{% url 'bid_create' listing.pk %}` — show only if `listing.is_active and user.is_authenticated and request.user.userprofile.role == "client"`
 - If `bids is not None`: show the bids table with Accept/Reject buttons (POST forms to `{% url 'bid_accept' bid.pk %}` and `{% url 'bid_reject' bid.pk %}`)
   - Only show Accept/Reject buttons for bids where `bid.status == "pending"`
 
@@ -96,153 +121,131 @@ All templates live in `core/templates/core/`. The six files you need to style ar
 - Two sections: "Your Work (as Student)" and "Your Hires (as Client)"
 - Each contract as a row with a link to `{% url 'contract_detail' contract.pk %}`
 - Empty state messages for when either list is empty
+- KYC pending notice when `not request.user.userprofile.is_kyc_verified`
+- Logout button: `<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>Logout</button></form>`
 
 ---
 
-### Templates Member 3 will provide
-Member 2 does not build these — they're Member 3's responsibility:
-- `registration/login.html` (or equivalent)
-- `registration/logout.html`
-- A registration/signup page
-- A user profile page
+### Templates already built by Member 3 (do not duplicate)
+- `registration/login.html`
+- `registration/register.html`
 
-You may want to coordinate on a shared `base.html` for consistent navigation.
+You may want to coordinate on a shared `base.html` for consistent navigation across all pages.
 
 ---
 
 ## Member 3 — User Auth and Profiles
 
-### What's already done
-The `UserProfile` model exists and is linked to Django's `User` via `OneToOneField`. The views use `@login_required` which redirects to `/accounts/login/` when a user is not logged in. That URL must resolve — it's your first priority.
+### What is already done
 
-### What you need to build
+The following were completed by Member 3 or by Member 1 during integration:
 
-#### 1. Wire up auth URLs in `studentgig/urls.py`
+| Task | Status |
+|---|---|
+| `path("accounts/", include("django.contrib.auth.urls"))` in root `urls.py` | Done |
+| `registration/login.html` template | Done |
+| `registration/register.html` template | Done |
+| `register` view — creates User + sets role on UserProfile | Done (`core/views.py`) |
+| `UserRegisterForm` with username, password, role fields | Done (`core/forms.py`) |
+| `UserProfile` auto-created by signal on every new `User` | Done (`core/signals.py`) |
+| `LOGIN_REDIRECT_URL = '/'` and `LOGOUT_REDIRECT_URL = '/accounts/login/'` | Done (`settings.py`) |
 
-Open `studentgig/urls.py` and add Django's built-in auth views:
+### What you still need to build
 
+#### 1. Profile page view
+
+Build a view that shows a user's public profile:
+- Username, role, bio, KYC status
+- Their active listings (if student): `profile.listings.filter(is_active=True)`
+- Reviews they have received: `profile.reviews_received.select_related("reviewer")`
+
+Suggested URL to add to `core/urls.py`:
 ```python
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),  # adds login, logout, password views
-    path("", include("core.urls")),
-]
+path("profiles/<int:user_pk>/", views.profile_detail, name="profile_detail"),
 ```
 
-This gives you `/accounts/login/`, `/accounts/logout/`, and password reset URLs for free.
+#### 2. Review submission view
 
-You then need to create the templates Django expects at these paths. By default Django looks for `registration/login.html`.
+After a contract is completed, both the student and the client should be able to leave one review each.
 
-#### 2. Registration view
+The `Review` model already exists with fields: `contract`, `reviewer`, `reviewee`, `rating` (1–5), `comment`.
 
-Django's built-in auth does not include a registration view. You need to write one.
-
-It must:
-- Create a `User` with username and password
-- Create a `UserProfile` for that user with the chosen `role` (`"student"` or `"client"`)
-- Log the user in and redirect to `listing_list`
-
-Recommended approach — create `core/views.py` additions (or a separate `accounts/` app):
-
-```python
-# Example registration view skeleton — implement in full
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
-from django import forms as django_forms
-from core.models import UserProfile
-
-class RegisterForm(UserCreationForm):
-    ROLE_CHOICES = [("student", "Student"), ("client", "Client")]
-    role = django_forms.ChoiceField(choices=ROLE_CHOICES)
-
-def register(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            UserProfile.objects.create(user=user, role=form.cleaned_data["role"])
-            login(request, user)
-            return redirect("listing_list")
-    else:
-        form = RegisterForm()
-    return render(request, "registration/register.html", {"form": form})
-```
-
-Add the URL:
-```python
-path("accounts/register/", views.register, name="register"),
-```
-
-#### 3. Profile page
-
-Build a view that shows:
-- The user's profile info (username, role, bio, KYC status)
-- Their listings (if student)
-- Reviews they've received
-
-Context you have available from the model:
-```python
-profile = UserProfile.objects.get(user=request.user)
-listings = profile.listings.filter(is_active=True)          # student's listings
-reviews = profile.reviews_received.select_related("reviewer")  # all received reviews
-```
-
-#### 4. Review submission view
-
-After a contract is completed, both parties should be able to leave a review.
-
-The `Review` model already exists with these fields: `contract`, `reviewer`, `reviewee`, `rating` (1–5), `comment`.
+**Important constraint:** `Review` has `unique_together = [("contract", "reviewer")]`. Your view must check that the logged-in user has not already reviewed this contract before saving, otherwise Django will raise an `IntegrityError`.
 
 Build a view that:
 - Is protected by `@login_required`
 - Takes a `contract_pk` URL argument
-- Verifies the request user is a party to the contract
-- Verifies the contract is `"completed"`
-- Prevents duplicate reviews (one reviewer per contract)
+- Verifies the request user is a party to the contract (`contract.student` or `contract.client`)
+- Verifies the contract status is `"completed"`
+- Checks no review by this user on this contract already exists
 - Saves a `Review` and redirects to the contract detail page
 
+Suggested URL to add to `core/urls.py`:
 ```python
-# URL pattern to add
 path("contracts/<int:contract_pk>/review/", views.review_create, name="review_create"),
 ```
 
-#### 5. Login redirect setting
-
-Add this to `studentgig/settings.py` so users land on the listing browse page after login:
-
+Suggested view sketch:
 ```python
-LOGIN_REDIRECT_URL = "listing_list"
-LOGOUT_REDIRECT_URL = "listing_list"
+@login_required
+def review_create(request, contract_pk):
+    contract = get_object_or_404(Contract, pk=contract_pk)
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    if contract.student != profile and contract.client != profile:
+        return HttpResponseForbidden("You are not a party to this contract.")
+    if contract.status != "completed":
+        return HttpResponseBadRequest("Contract is not completed yet.")
+    if Review.objects.filter(contract=contract, reviewer=profile).exists():
+        return HttpResponseBadRequest("You have already reviewed this contract.")
+
+    reviewee = contract.client if profile == contract.student else contract.student
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.contract = contract
+            review.reviewer = profile
+            review.reviewee = reviewee
+            review.save()
+            return redirect("contract_detail", pk=contract.pk)
+    else:
+        form = ReviewForm()
+    return render(request, "core/review_form.html", {"form": form, "contract": contract})
 ```
+
+You will also need to create `ReviewForm` in `core/forms.py`:
+```python
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["rating", "comment"]
+```
+
+And the template `core/templates/core/review_form.html`.
 
 ---
 
 ### Important: do not modify these files
-- `core/models.py` — all models are final
-- `core/views.py` — all existing views are tested at 100% coverage
-- `core/urls.py` — existing URL patterns must not change
-- `core/admin.py` — admin is configured
+- `core/models.py`
+- `core/views.py` (add new views at the bottom only)
+- `core/admin.py`
+- `core/signals.py`
+- `core/migrations/` (never edit existing migration files)
 
-If you need to add views (register, profile, review), add them in `core/views.py` at the bottom, or create a new file (e.g. `core/auth_views.py`) and import from it in `core/urls.py`.
+If you add new views, add them to the **bottom** of `core/views.py` and add their URL patterns to `core/urls.py`.
 
 ---
 
-## Summary of who owns what
+## Summary of remaining work
 
-| Feature | Member |
-|---|---|
-| Models, migrations | 1 (done) |
-| Admin panel | 1 (done) |
-| Listing browse/detail/create views | 1 (done) |
-| Bid lifecycle views | 1 (done) |
-| Contract/payment views | 1 (done) |
-| Dashboard view | 1 (done) |
-| All templates (`.html` files) | 2 |
-| CSS and styling | 2 |
-| Login/logout URL wiring | 3 |
-| Registration view + form | 3 |
-| Profile page view | 3 |
-| Review submission view | 3 |
+| Task | Member | Status |
+|---|---|---|
+| Style all 6 core templates | 2 | Pending |
+| Style `registration/login.html` | 2 | Pending |
+| Style `registration/register.html` | 2 | Pending |
+| Shared `base.html` | 2 | Pending |
+| Profile page view + template | 3 | Pending |
+| Review submission view + template | 3 | Pending |
+| `ReviewForm` in `core/forms.py` | 3 | Pending |
