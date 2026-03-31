@@ -4,6 +4,11 @@
     <title>Place Bid</title>
 </head>
 <body>
+    {% if messages %}
+    {% for message in messages %}
+        <p style="color: green;">{{ message }}</p>
+    {% endfor %}
+{% endif %}
 
 <h1>Place a Bid</h1>
 

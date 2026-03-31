@@ -6,6 +6,8 @@ from django.contrib.auth import login
 from django.utils import timezone
 from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment
 from .forms import BidForm, ServiceListingForm, UserRegisterForm
+from django.contrib import messages
+from django.db.models import Q
 
 
 def home(request):
@@ -44,6 +46,7 @@ def listing_create(request):
             listing = form.save(commit=False)
             listing.owner = profile
             listing.save()
+            messages.success(request, "Listing created successfully")
             return redirect("listing_detail", pk=listing.pk)
     else:
         form = ServiceListingForm()
@@ -63,18 +66,16 @@ def place_bid(request, pk):
 
     if request.method == "POST":
         form = BidForm(request.POST)
-        print("POST received")
-        print(request.POST)
 
         if form.is_valid():
             bid = form.save(commit=False)
             bid.listing = listing
             bid.client = profile
             bid.save()
+            messages.success(request, "Bid placed successfully")
             return redirect("listing_detail", pk=listing.pk)
         else:
-            print("FORM NOT VALID")
-            print(form.errors)
+            pass
     else:
         form = BidForm()
 
@@ -110,12 +111,14 @@ def bid_accept(request, pk):
         agreed_price=bid.proposed_price,
         status="active",
     )
+    
     Payment.objects.create(
         contract=contract,
         amount=contract.agreed_price,
         status="held",
     )
 
+    messages.success(request, "Bid accepted. Contract created.")
     return redirect("contract_detail", pk=contract.pk)
 
 
@@ -159,6 +162,7 @@ def contract_complete(request, pk):
     contract.payment.status = "released"
     contract.payment.save()
 
+    messages.success(request, "Contract completed. Payment released.")
     return redirect("contract_detail", pk=contract.pk)
 
 
@@ -192,3 +196,22 @@ def register(request):
         form = UserRegisterForm()
     
     return render(request, "registration/register.html", {"form": form})
+
+@login_required
+def contracts(request):
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    active_contracts = Contract.objects.filter(
+        (Q(student=profile) | Q(client=profile)),
+        status="active"
+    )
+
+    completed_contracts = Contract.objects.filter(
+        (Q(student=profile) | Q(client=profile)),
+        status="completed"
+    )
+
+    return render(request, "core/contracts.html", {
+        "active_contracts": active_contracts,
+        "completed_contracts": completed_contracts,
+    })

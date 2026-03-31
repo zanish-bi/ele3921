@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Contracts</title>
+</head>
+<body>
+
+<h1>My Contracts</h1>
+
+<h2>Active Contracts</h2>
+
+{% for contract in active_contracts %}
+    <div>
+        <p><strong>Service:</strong> {{ contract.bid.listing.title }}</p>
+        <p><strong>Other user:</strong>
+            {% if contract.student == request.user.userprofile %}
+                {{ contract.client }}
+            {% else %}
+                {{ contract.student }}
+            {% endif %}
+        </p>
+
+        <p>Status: 🟢 Active</p>
+
+        <a href="{% url 'contract_detail' contract.pk %}">View</a>
+        <hr>
+    </div>
+{% empty %}
+    <p>No active contracts.</p>
+{% endfor %}
+
+
+<h2>Completed Contracts</h2>
+
+{% for contract in completed_contracts %}
+    <div>
+        <p><strong>Service:</strong> {{ contract.bid.listing.title }}</p>
+        <p><strong>Other user:</strong>
+            {% if contract.student == request.user.userprofile %}
+                {{ contract.client }}
+            {% else %}
+                {{ contract.student }}
+            {% endif %}
+        </p>
+
+        <p>Status: ✅ Completed</p>
+
+        <a href="{% url 'contract_detail' contract.pk %}">View</a>
+        <hr>
+    </div>
+{% empty %}
+    <p>No completed contracts.</p>
+{% endfor %}
+
+</body>
+<hr>
+
+<p>
+    <a href="{% url 'listing_list' %}">← Browse Listings</a> |
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+</p>
+</html>

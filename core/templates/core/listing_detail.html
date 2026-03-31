@@ -2,6 +2,24 @@
 <html>
 <head><title>{{ listing.title }}</title></head>
 <body>
+{% if messages %}
+    <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        z-index: 1000;
+    ">
+        {% for message in messages %}
+            <p style="margin: 0;">{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <h1>{{ listing.title }}</h1>
 <p>Category: {{ listing.category.name }}</p>
 <p>Price: ${{ listing.price }}</p>
@@ -19,25 +37,55 @@
 
 {% if bids is not None %}
 <h2>Bids ({{ bids|length }})</h2>
+
 {% for bid in bids %}
+
+{##supposed to show message when task is accepted/rejected##}
 <div>
-  <p>From: {{ bid.client }} | Price: ${{ bid.proposed_price }} | Status: {{ bid.status }}</p>
-  <p>{{ bid.message }}</p>
-  {% if bid.status == "pending" %}
-  <form method="post" action="{% url 'bid_accept' bid.pk %}">
-    {% csrf_token %}
-    <button type="submit">Accept</button>
-  </form>
-  <form method="post" action="{% url 'bid_reject' bid.pk %}">
-    {% csrf_token %}
-    <button type="submit">Reject</button>
-  </form>
-  {% endif %}
-</div>
+    <p>
+        <strong>{{ bid.client }}</strong> bid ${{ bid.proposed_price }}
+    </p>
+
+    <p>
+        Status:
+        {% if bid.status == "pending" %}
+            ⏳ Pending
+        {% elif bid.status == "accepted" %}
+            ✅ Accepted
+        {% elif bid.status == "rejected" %}
+            ❌ Rejected
+        {% endif %}
+    </p>
+
+    <p>{{ bid.message }}</p>
+
+    {% if bid.status == "pending" %}
+        <form method="post" action="{% url 'bid_accept' bid.pk %}">
+            {% csrf_token %}
+            <button type="submit">Accept</button>
+        </form>
+
+        <form method="post" action="{% url 'bid_reject' bid.pk %}">
+            {% csrf_token %}
+            <button type="submit">Reject</button>
+        </form>
+    {% endif %}
+
+    <hr>
+
 {% empty %}
 <p>No bids yet.</p>
 {% endfor %}
 {% endif %}
 <a href="{% url 'listing_list' %}">Back to Listings</a>
+
+<script>
+    setTimeout(function() {
+        const msg = document.querySelector('div[style*="position: fixed"]');
+        if (msg) {
+            msg.style.display = "none";
+        }
+    }, 5000);  // ← 5 seconds
+</script>
 </body>
 </html>

@@ -33,26 +33,17 @@
     <p>Not logged in</p>
 {% endif %}
 <h1>Dashboard</h1>
-<h2>Contracts as Student</h2>
-{% for contract in student_contracts %}
-<div>
-  <a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a>
-  — {{ contract.bid.listing.title }} | {{ contract.status }} | ${{ contract.agreed_price }}
-  | Client: {{ contract.client }}
-</div>
-{% empty %}
-<p>No contracts as student.</p>
-{% endfor %}
-<h2>Contracts as Client</h2>
-{% for contract in client_contracts %}
-<div>
-  <a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a>
-  — {{ contract.bid.listing.title }} | {{ contract.status }} | ${{ contract.agreed_price }}
-  | Student: {{ contract.student }}
-</div>
-{% empty %}
-<p>No contracts as client.</p>
-{% endfor %}
-<a href="{% url 'listing_list' %}">Browse Listings</a>
+
+<h3>Navigation</h3>
+
+<ul>
+    <li><a href="{% url 'listing_list' %}">Browse Listings</a></li>
+
+    {% if request.user.userprofile.role == "student" %}
+        <li><a href="{% url 'listing_create' %}">Post a Service</a></li>
+    {% endif %}
+
+</ul>
+
 </body>
 </html>

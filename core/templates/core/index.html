@@ -1,20 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudentGig</title>
-</head>
 <body>
+{% if messages %}
+    {% for message in messages %}
+        <p style="color: green;">{{ message }}</p>
+    {% endfor %}
+{% endif %}
 
 {% if request.user.is_authenticated %}
     <p>
-        Logged in as: {{ request.user.username }} 
-        ({{ request.user.userprofile.role }})
+        Logged in as: {{ request.user.username }} ({{ request.user.userprofile.role }})
     </p>
 
     <p>
-        KYC status: {% if request.user.userprofile.is_kyc_verified %}Verified{% else %}Pending{% endif %}
+        KYC status:
+        {% if request.user.userprofile.is_kyc_verified %}
+            Verified
+        {% else %}
+            Pending
+        {% endif %}
     </p>
 
     <form method="post" action="{% url 'logout' %}">
@@ -22,12 +24,32 @@
         <button type="submit">Logout</button>
     </form>
 
+    <hr>
+
+    <h2>Navigation</h2>
+
+    <a href="{% url 'dashboard' %}">Dashboard</a><br>
+
+    {% if request.user.userprofile.role == "student" %}
+    <a href="{% url 'listing_create' %}">Post a Service</a><br>
+    {% endif %}
+
+    {% if request.user.userprofile.role == "client" %}
+        <a href="{% url 'listing_list' %}">Browse Listings</a><br>
+    {% endif %}
+
 {% else %}
-    <p>Not logged in</p>
+
+    <p>You are not logged in</p>
+
+    <a href="{% url 'login' %}">Login</a><br>
+    <a href="{% url 'register' %}">Register</a>
+
 {% endif %}
 
-<h1>Welcome to studentgig</h1>
-<p>search in url dashboard to get it</p>
+<hr>
+
+<h1>Welcome to StudentGig</h1>
+<p>Simple marketplace for students</p>
 
 </body>
-</html>
