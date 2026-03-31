@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <title>Place Bid</title>
 </head>
 <body>
 
-<h1>Register</h1>
+<h1>Place a Bid</h1>
+
+<p>Listing: {{ listing.title }}</p>
 
 <form method="post">
     {% csrf_token %}
@@ -20,8 +22,10 @@
         </p>
     {% endfor %}
 
-    <button type="submit">Register</button>
+    <button type="submit">Submit Bid</button>
 </form>
+
+<a href="{% url 'listing_detail' listing.pk %}">Back</a>
 
 </body>
 </html>

@@ -3,9 +3,17 @@
 <head><title>Post a Service</title></head>
 <body>
 <h1>Post a Service</h1>
-<form method="post">
+<form method="post" action="">
   {% csrf_token %}
-  {{ form.as_p }}
+{{ form.non_field_errors }}
+
+{% for field in form %}
+    <p>
+        {{ field.label_tag }}<br>
+        {{ field }}
+        {{ field.errors }}
+    </p>
+{% endfor %}
   <button type="submit">Create Listing</button>
 </form>
 <a href="{% url 'listing_list' %}">Cancel</a>

@@ -4,7 +4,6 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib.auth import login
 from django.utils import timezone
-
 from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment
 from .forms import BidForm, ServiceListingForm, UserRegisterForm
 
@@ -52,24 +51,37 @@ def listing_create(request):
 
 
 @login_required
-def bid_create(request, listing_pk):
-    listing = get_object_or_404(ServiceListing, pk=listing_pk, is_active=True)
+def place_bid(request, pk):
+    listing = get_object_or_404(ServiceListing, pk=pk, is_active=True)
     profile = get_object_or_404(UserProfile, user=request.user)
+
     if profile.role != "client":
         return HttpResponseForbidden("Only clients can place bids.")
+
     if not profile.is_kyc_verified:
-        return HttpResponseForbidden("KYC verification required to place bids.")
+        return HttpResponseForbidden("KYC verification required.")
+
     if request.method == "POST":
         form = BidForm(request.POST)
+        print("POST received")
+        print(request.POST)
+
         if form.is_valid():
             bid = form.save(commit=False)
             bid.listing = listing
             bid.client = profile
             bid.save()
             return redirect("listing_detail", pk=listing.pk)
+        else:
+            print("FORM NOT VALID")
+            print(form.errors)
     else:
         form = BidForm()
-    return render(request, "core/bid_form.html", {"form": form, "listing": listing})
+
+    return render(request, "core/place_bid.html", {
+        "form": form,
+        "listing": listing
+    })
 
 
 @login_required
@@ -168,11 +180,15 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
             user.save()
+
             profile = user.userprofile
             profile.role = form.cleaned_data["role"]
+            profile.is_kyc_verified = False
             profile.save()
+            
             login(request, user)
             return redirect("dashboard")
     else:
         form = UserRegisterForm()
+    
     return render(request, "registration/register.html", {"form": form})
