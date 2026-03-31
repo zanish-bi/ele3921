@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from .models import Bid, ServiceListing
 
 
@@ -14,10 +15,9 @@ class ServiceListingForm(forms.ModelForm):
         fields = ["category", "title", "description", "price", "is_remote"]
 
 
-from django.contrib.auth.models import User
-
 class UserRegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
+    role = forms.ChoiceField(choices=[("student", "Student"), ("client", "Client")])
 
     class Meta:
         model = User

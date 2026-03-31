@@ -20,13 +20,10 @@
     </p>
 
     {% if not request.user.userprofile.is_kyc_verified %}
-        <form method="post" action="{% url 'verify_kyc' %}">
-            {% csrf_token %}
-            <button type="submit">Verify Account</button>
-        </form>
+        <p><em>KYC pending — an admin will verify your account before you can transact.</em></p>
     {% endif %}
 
-    <!-- 👇 LEGG DENNE TILBAKE -->
+
     <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button type="submit">Logout</button>

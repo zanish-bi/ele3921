@@ -14,7 +14,11 @@ from core.admin import UserProfileAdmin
 
 def make_user(username, role, kyc=False):
     user = User.objects.create_user(username=username, password="pass")
-    profile = UserProfile.objects.create(user=user, role=role, is_kyc_verified=kyc)
+    # Signal auto-creates the profile; update it with the desired role/kyc
+    profile = user.userprofile
+    profile.role = role
+    profile.is_kyc_verified = kyc
+    profile.save()
     return user, profile
 
 
@@ -279,7 +283,9 @@ class ListingDetailViewTests(TestCase):
         self.assertNotContains(response, "Bids (")
 
     def test_user_without_profile_does_not_see_bids_section(self):
-        User.objects.create_user(username="ghost", password="pass")
+        ghost_user = User.objects.create_user(username="ghost", password="pass")
+        # Delete the signal-created profile to test the no-profile code path
+        UserProfile.objects.filter(user=ghost_user).delete()
         self.client.login(username="ghost", password="pass")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
@@ -628,13 +634,45 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, f"Contract #{self.contract.pk}")
 
     def test_empty_dashboard_shows_no_contracts_message(self):
-        User.objects.create_user(username="dan", password="pass")
-        UserProfile.objects.create(
-            user=User.objects.get(username="dan"),
-            role="student",
-        )
+        dan_user = User.objects.create_user(username="dan", password="pass")
+        dan_user.userprofile.role = "student"
+        dan_user.userprofile.save()
         self.client.login(username="dan", password="pass")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No contracts as student.")
         self.assertContains(response, "No contracts as client.")
+
+
+# --- Home and register views ---
+
+class HomeViewTests(TestCase):
+    def test_home_renders(self):
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+
+
+class RegisterViewTests(TestCase):
+    def test_register_get_renders_form(self):
+        response = self.client.get(reverse("register"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<form")
+
+    def test_register_valid_post_creates_user_and_redirects(self):
+        response = self.client.post(reverse("register"), {
+            "username": "newstudent",
+            "password": "testpass123",
+            "role": "student",
+        })
+        self.assertRedirects(response, reverse("dashboard"))
+        user = User.objects.get(username="newstudent")
+        self.assertEqual(user.userprofile.role, "student")
+
+    def test_register_invalid_post_rerenders_form(self):
+        response = self.client.post(reverse("register"), {
+            "username": "",
+            "password": "testpass123",
+            "role": "student",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="").exists())

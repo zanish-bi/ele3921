@@ -14,7 +14,7 @@
     </p>
 
     <p>
-        KYC status: {{ request.user.userprofile.is_verified }}
+        KYC status: {% if request.user.userprofile.is_kyc_verified %}Verified{% else %}Pending{% endif %}
     </p>
 
     <form method="post" action="{% url 'logout' %}">

@@ -101,5 +101,8 @@ class Review(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = [("contract", "reviewer")]
+
     def __str__(self):
         return f"Review by {self.reviewer} for {self.reviewee} ({self.rating}/5)"
