@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+{% block title %}Browse Jobs — StudentGig{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Browse Job Requests</h1>
+        <p>Clients posting work — students apply with a bid</p>
+    </div>
+    {% if request.user.is_authenticated and request.user.userprofile.role == "client" %}
+        <a href="{% url 'job_request_create' %}" class="btn btn-primary">+ Post a Job</a>
+    {% endif %}
+</div>
+
+<div class="filter-bar">
+    <form method="get" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="number" name="budget_max" placeholder="Max budget $" min="0" step="0.01"
+               value="{{ request.GET.budget_max }}"
+               style="width:110px;padding:.42rem .6rem;border:1px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--card-bg);">
+        <select name="sort">
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
+            <option value="budget_asc" {% if sort == "budget_asc" %}selected{% endif %}>Budget: Low → High</option>
+            <option value="budget_desc" {% if sort == "budget_desc" %}selected{% endif %}>Budget: High → Low</option>
+        </select>
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if request.GET.category or request.GET.budget_max %}
+            <a href="{% url 'job_request_list' %}" class="btn btn-secondary btn-sm">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="listings-grid">
+    {% for job in jobs %}
+    <div class="listing-card">
+        <h3><a href="{% url 'job_request_detail' job.pk %}">{{ job.title }}</a></h3>
+        <div class="listing-card-meta">
+            <span>{{ job.category.name }}</span>
+            <span>&middot;</span>
+            <span>Posted by {{ job.client }}</span>
+            <span>&middot;</span>
+            <span>{{ job.created_at|date:"N j, Y" }}</span>
+        </div>
+        <p class="listing-card-desc">{{ job.description }}</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.25rem;">
+            <span class="listing-price">Budget: ${{ job.budget }}</span>
+            <a href="{% url 'job_request_detail' job.pk %}" class="btn btn-secondary btn-sm">View</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;">
+        <p class="empty-state">No open job requests found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

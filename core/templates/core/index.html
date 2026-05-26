@@ -33,11 +33,14 @@
 {% endif %}
 
 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
-    <a href="{% url 'listing_list' %}" class="btn btn-primary">Browse Listings</a>
+    <a href="{% url 'listing_list' %}" class="btn btn-primary">Browse Services</a>
+    <a href="{% url 'job_request_list' %}" class="btn btn-primary">Browse Jobs</a>
     <a href="{% url 'dashboard' %}" class="btn btn-secondary">My Dashboard</a>
     <a href="{% url 'contracts' %}" class="btn btn-secondary">My Contracts</a>
     {% if request.user.userprofile.role == "student" %}
         <a href="{% url 'listing_create' %}" class="btn btn-success">Post a Service</a>
+    {% else %}
+        <a href="{% url 'job_request_create' %}" class="btn btn-success">Post a Job</a>
     {% endif %}
 </div>
 
@@ -50,6 +53,7 @@
         <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
         <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
         <a href="{% url 'listing_list' %}" class="btn btn-secondary">Browse Services</a>
+        <a href="{% url 'job_request_list' %}" class="btn btn-secondary">Browse Jobs</a>
     </div>
 </div>
 

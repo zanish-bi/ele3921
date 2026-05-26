@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.utils import timezone
-from core.models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review
+from core.models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review, JobRequest
 
 
 TEST_USERS = [
@@ -69,6 +69,7 @@ class Command(BaseCommand):
         self._seed_listings()
         self._seed_active_contract()
         self._seed_completed_contract()
+        self._seed_job_request()
         self._print_summary()
 
     def _seed_users(self):
@@ -204,6 +205,39 @@ class Command(BaseCommand):
             f"  contract #{contract.pk} (completed, payment released, review by client) — created"
         )
 
+    def _seed_job_request(self):
+        """One open job request from client1 so the Jobs page is not empty on first load."""
+        self.stdout.write("Seeding job request...")
+        try:
+            client = User.objects.get(username="client1").userprofile
+        except User.DoesNotExist:
+            self.stdout.write(self.style.WARNING("  client1 not found, skipping"))
+            return
+
+        cat = Category.objects.filter(name="Programming").first()
+        if not cat:
+            self.stdout.write(self.style.WARNING("  'Programming' category not found, skipping"))
+            return
+
+        job, created = JobRequest.objects.get_or_create(
+            client=client,
+            title="Need a Python Script for Data Processing",
+            defaults={
+                "category": cat,
+                "description": (
+                    "I have a CSV file with ~10,000 rows of sales data. "
+                    "I need a Python script that cleans the data, removes duplicates, "
+                    "and generates a summary report (totals by month, top products). "
+                    "Output should be a new CSV plus a simple text summary. "
+                    "Deadline: one week. Please bid if you have pandas/numpy experience."
+                ),
+                "budget": "60.00",
+                "is_active": True,
+            },
+        )
+        tag = "created" if created else "already exists"
+        self.stdout.write(f"  '{job.title}' — {tag}")
+
     def _print_summary(self):
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS("Seed complete. Test accounts:"))
@@ -217,3 +251,6 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write("  Available listing for bidding:")
         self.stdout.write("  'Academic Essay Editing' by student2 — log in as client1 to bid")
+        self.stdout.write("")
+        self.stdout.write("  Available job request for bidding:")
+        self.stdout.write("  'Need a Python Script for Data Processing' by client1 — log in as student1 to bid")

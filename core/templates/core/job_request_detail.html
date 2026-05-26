@@ -1,0 +1,134 @@
+{% extends "core/base.html" %}
+{% block title %}{{ job.title }} — StudentGig{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem;">
+    <a href="{% url 'job_request_list' %}" style="font-size:.85rem;color:var(--muted);">&larr; Back to Jobs</a>
+</div>
+
+<div class="page-header">
+    <div>
+        <h1>{{ job.title }}</h1>
+        <p>{{ job.category.name }} &middot; Posted by {{ job.client }} &middot; {{ job.created_at|date:"N j, Y" }}</p>
+    </div>
+    <div>
+        {% if job.is_active %}
+            <span class="badge badge-info" style="font-size:.85rem;padding:.3rem .8rem;">Open</span>
+        {% else %}
+            <span class="badge badge-success" style="font-size:.85rem;padding:.3rem .8rem;">Closed</span>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start;">
+
+    <div>
+        <div class="card">
+            <div class="section-title">Description</div>
+            <p style="font-size:.92rem;line-height:1.65;white-space:pre-wrap;">{{ job.description }}</p>
+        </div>
+
+        {# ── Owner: list of bids ── #}
+        {% if is_owner and bids %}
+        <div class="card">
+            <div class="section-title">Bids Received ({{ bids|length }})</div>
+            <table class="table">
+                <thead><tr><th>Student</th><th>Amount</th><th>Message</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for bid in bids %}
+                    <tr class="contract-row">
+                        <td><a href="{% url 'profile_detail' bid.student.user.pk %}">{{ bid.student }}</a></td>
+                        <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                        <td style="font-size:.83rem;color:var(--muted);">{{ bid.message|truncatewords:12 }}</td>
+                        <td>
+                            {% if bid.status == "pending" %}
+                            <form method="post" action="{% url 'job_bid_accept' bid.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                            </form>
+                            <form method="post" action="{% url 'job_bid_reject' bid.pk %}" style="display:inline;margin-left:.3rem;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                            {% else %}
+                                <span class="badge {% if bid.status == 'accepted' %}badge-success{% else %}badge-danger{% endif %}">{{ bid.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% elif is_owner %}
+        <div class="card">
+            <div class="section-title">Bids Received</div>
+            <p class="empty-state">No bids yet.</p>
+        </div>
+        {% endif %}
+
+        {# ── Student: my bid or bid form ── #}
+        {% if my_bid %}
+        <div class="card" style="border:2px solid var(--navy);">
+            <div class="section-title">Your Bid</div>
+            <p style="margin-bottom:.4rem;font-size:.9rem;">
+                Amount: <strong style="color:var(--navy);font-family:var(--serif);">${{ my_bid.proposed_price }}</strong>
+                &nbsp;&nbsp;
+                Status:
+                {% if my_bid.status == "pending" %}<span class="badge badge-warning">Pending</span>
+                {% elif my_bid.status == "accepted" %}<span class="badge badge-success">Accepted</span>
+                {% else %}<span class="badge badge-danger">Rejected</span>
+                {% endif %}
+            </p>
+            <p style="font-size:.85rem;color:var(--muted);white-space:pre-wrap;">{{ my_bid.message }}</p>
+        </div>
+        {% endif %}
+
+        {% if placing_bid or can_bid %}
+        <div class="card" style="border:2px solid var(--navy);">
+            <div class="section-title">Place Your Bid</div>
+            <form method="post" action="{% url 'job_bid_create' job.pk %}">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Bid</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if not is_owner and not my_bid and not can_bid and request.user.is_authenticated %}
+        <div class="alert alert-info" style="margin-top:.5rem;">
+            {% if not request.user.userprofile.is_kyc_verified %}
+                Complete KYC verification from your <a href="{% url 'dashboard' %}">dashboard</a> to bid on jobs.
+            {% elif request.user.userprofile.role != "student" %}
+                Only students can bid on job requests.
+            {% elif not job.is_active %}
+                This job is closed — a student has already been hired.
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <div class="card">
+            <div class="section-title">Budget</div>
+            <div style="font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--navy);">${{ job.budget }}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:.3rem;">Client's maximum budget</div>
+        </div>
+        <div class="card">
+            <div class="section-title">Client</div>
+            <a href="{% url 'profile_detail' job.client.user.pk %}">{{ job.client }}</a>
+        </div>
+        {% if can_bid and not placing_bid %}
+        <a href="{% url 'job_bid_create' job.pk %}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">Apply / Bid</a>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

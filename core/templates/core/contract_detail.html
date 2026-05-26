@@ -10,7 +10,7 @@
 <div class="page-header">
     <div>
         <h1>Contract #{{ contract.pk }}</h1>
-        <p>{{ contract.bid.listing.title }}</p>
+        <p>{{ contract.listing_title }}</p>
     </div>
     <div>
         {% if contract.status == "active" %}
@@ -44,10 +44,10 @@
 
         <div class="card">
             <div class="section-title">Service</div>
-            <div class="detail-label">Listing</div>
-            <div class="detail-value" style="margin-bottom:.75rem;">{{ contract.bid.listing.title }}</div>
+            <div class="detail-label">Listing / Job</div>
+            <div class="detail-value" style="margin-bottom:.75rem;">{{ contract.listing_title }}</div>
             <div class="detail-label">Bid Message</div>
-            <div class="detail-value" style="white-space:pre-wrap;">{{ contract.bid.message }}</div>
+            <div class="detail-value" style="white-space:pre-wrap;">{{ contract.bid_message }}</div>
         </div>
 
         <div class="card">
@@ -143,4 +143,43 @@
     </div>
 
 </div>
+
+{# ── Message Thread ─────────────────────────────────────────────────────── #}
+<div class="card" style="margin-top:1.5rem;">
+    <div class="section-title">Messages</div>
+    <div id="msg-thread" style="max-height:320px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:.65rem;">
+        {% for msg in thread %}
+        <div style="display:flex;gap:.65rem;align-items:flex-start;
+            {% if msg.sender == profile %}flex-direction:row-reverse;{% endif %}">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;
+                display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;">
+                {{ msg.sender.user.username|slice:":1"|upper }}
+            </div>
+            <div style="max-width:70%;
+                {% if msg.sender == profile %}background:var(--navy);color:#fff;{% else %}background:#f3f0e8;color:var(--text);{% endif %}
+                border-radius:10px;padding:.55rem .85rem;font-size:.87rem;line-height:1.45;">
+                <div style="font-weight:600;font-size:.73rem;margin-bottom:.2rem;
+                    {% if msg.sender == profile %}color:rgba(255,255,255,.7);{% else %}color:var(--muted);{% endif %}">
+                    {{ msg.sender.user.username }} &middot; {{ msg.created_at|date:"N j, g:i a" }}
+                </div>
+                {{ msg.body|linebreaksbr }}
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-state" style="text-align:center;padding:1rem 0;">No messages yet. Start the conversation below.</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{% url 'contract_message_create' contract.pk %}" style="display:flex;gap:.6rem;align-items:flex-end;">
+        {% csrf_token %}
+        <div style="flex:1;">
+            {{ msg_form.body }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;">Send</button>
+    </form>
+</div>
+<script>
+    var t = document.getElementById('msg-thread');
+    if(t) t.scrollTop = t.scrollHeight;
+</script>
 {% endblock %}

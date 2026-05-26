@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
-from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review
+from .models import (
+    UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review,
+    JobRequest, JobBid, ContractMessage, Notification,
+)
 
 
 class BidInline(admin.TabularInline):
@@ -15,6 +18,19 @@ class PaymentInline(admin.StackedInline):
     extra = 0
     readonly_fields = ["created_at"]
     fields = ["amount", "status", "created_at"]
+
+
+class ContractMessageInline(admin.TabularInline):
+    model = ContractMessage
+    extra = 0
+    readonly_fields = ["sender", "created_at"]
+    fields = ["sender", "body", "created_at"]
+
+
+class JobBidInline(admin.TabularInline):
+    model = JobBid
+    extra = 0
+    readonly_fields = ["created_at"]
 
 
 @admin.register(UserProfile)
@@ -51,6 +67,21 @@ class BidAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at"]
 
 
+@admin.register(JobRequest)
+class JobRequestAdmin(admin.ModelAdmin):
+    list_display = ["title", "client", "category", "budget", "is_active", "created_at"]
+    list_filter = ["category", "is_active"]
+    search_fields = ["title", "client__user__username"]
+    inlines = [JobBidInline]
+
+
+@admin.register(JobBid)
+class JobBidAdmin(admin.ModelAdmin):
+    list_display = ["job_request", "student", "proposed_price", "status", "created_at"]
+    list_filter = ["status"]
+    readonly_fields = ["created_at"]
+
+
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
     list_display = [
@@ -59,31 +90,49 @@ class ContractAdmin(admin.ModelAdmin):
     ]
     list_filter = ["status"]
     readonly_fields = ["created_at", "completed_at", "student_username", "client_username"]
-    inlines = [PaymentInline]
+    inlines = [PaymentInline, ContractMessageInline]
     fieldsets = [
-        ("Parties", {"fields": ["student_username", "client_username", "bid"]}),
+        ("Parties", {"fields": ["student_username", "client_username", "bid", "job_bid"]}),
         ("Contract", {"fields": ["student", "client", "agreed_price", "status", "created_at", "completed_at"]}),
         ("Admin Message to Parties", {
             "fields": ["admin_note"],
-            "description": (
-                "This message is displayed to both the student and client on the contract page. "
-                "Use it to communicate your decision on a dispute."
-            ),
+            "description": "This message is displayed to both parties on the contract page.",
         }),
     ]
     actions = ["release_payment", "refund_payment"]
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # If admin directly sets contract status, keep payment in sync.
+        if change and "status" in form.changed_data:
+            try:
+                payment = obj.payment
+                if obj.status == "completed" and payment.status != "released":
+                    payment.status = "released"
+                    payment.save(update_fields=["status"])
+                elif obj.status == "disputed" and payment.status == "released":
+                    payment.status = "refunded"
+                    payment.save(update_fields=["status"])
+            except Payment.DoesNotExist:
+                pass
 
     @admin.display(description="Student")
     def student_username(self, obj):
         u = obj.student.user
         email = u.email or "—"
-        return format_html("<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>", u.username, email)
+        return format_html(
+            "<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>",
+            u.username, email,
+        )
 
     @admin.display(description="Client")
     def client_username(self, obj):
         u = obj.client.user
         email = u.email or "—"
-        return format_html("<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>", u.username, email)
+        return format_html(
+            "<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>",
+            u.username, email,
+        )
 
     @admin.display(description="Payment")
     def payment_status_display(self, obj):
@@ -93,23 +142,17 @@ class ContractAdmin(admin.ModelAdmin):
             return "—"
         colours = {"held": "#854d0e", "released": "#166534", "refunded": "#991b1b"}
         return format_html(
-            "<span style='color:{};font-weight:600;'>{}</span>", colours.get(s, "#374151"), s.title()
+            "<span style='color:{};font-weight:600;'>{}</span>",
+            colours.get(s, "#374151"), s.title(),
         )
 
     @admin.display(description="Status")
     def status_display(self, obj):
         colours = {
-            "active": "#1e3a5f",
-            "delivered": "#b45309",
-            "completed": "#166534",
-            "disputed": "#991b1b",
+            "active": "#1e3a5f", "delivered": "#b45309",
+            "completed": "#166534", "disputed": "#991b1b",
         }
-        icons = {
-            "active": "●",
-            "delivered": "▲",
-            "completed": "✔",
-            "disputed": "⚠",
-        }
+        icons = {"active": "●", "delivered": "▲", "completed": "✔", "disputed": "⚠"}
         return format_html(
             "<span style='color:{};font-weight:700;'>{} {}</span>",
             colours.get(obj.status, "#374151"),
@@ -158,3 +201,16 @@ class PaymentAdmin(admin.ModelAdmin):
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ["reviewer", "reviewee", "rating", "contract"]
     list_filter = ["rating"]
+
+
+@admin.register(ContractMessage)
+class ContractMessageAdmin(admin.ModelAdmin):
+    list_display = ["contract", "sender", "body", "created_at"]
+    readonly_fields = ["created_at"]
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ["recipient", "message", "is_read", "created_at"]
+    list_filter = ["is_read"]
+    readonly_fields = ["created_at"]

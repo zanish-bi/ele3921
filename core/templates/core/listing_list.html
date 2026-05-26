@@ -13,15 +13,31 @@
 </div>
 
 <div class="filter-bar">
-    <form method="get" style="display:flex;gap:.6rem;align-items:center;">
+    <form method="get" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
         <select name="category">
             <option value="">All Categories</option>
             {% for cat in categories %}
                 <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
+        <select name="remote">
+            <option value="">Remote / In-person</option>
+            <option value="true" {% if request.GET.remote == "true" %}selected{% endif %}>Remote only</option>
+            <option value="false" {% if request.GET.remote == "false" %}selected{% endif %}>In-person only</option>
+        </select>
+        <input type="number" name="min_price" placeholder="Min $" min="0" step="0.01"
+               value="{{ request.GET.min_price }}"
+               style="width:80px;padding:.42rem .6rem;border:1px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--card-bg);">
+        <input type="number" name="max_price" placeholder="Max $" min="0" step="0.01"
+               value="{{ request.GET.max_price }}"
+               style="width:80px;padding:.42rem .6rem;border:1px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--card-bg);">
+        <select name="sort">
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
+            <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low → High</option>
+            <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High → Low</option>
+        </select>
         <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-        {% if request.GET.category %}
+        {% if request.GET.category or request.GET.remote or request.GET.min_price or request.GET.max_price %}
             <a href="{% url 'listing_list' %}" class="btn btn-secondary btn-sm">Clear</a>
         {% endif %}
     </form>

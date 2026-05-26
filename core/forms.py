@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Bid, ServiceListing, Review
+from .models import Bid, ServiceListing, Review, JobRequest, JobBid, ContractMessage
 
 
 class BidForm(forms.ModelForm):
@@ -28,3 +28,23 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ["rating", "comment"]
+
+
+class JobRequestForm(forms.ModelForm):
+    class Meta:
+        model = JobRequest
+        fields = ["category", "title", "description", "budget"]
+
+
+class JobBidForm(forms.ModelForm):
+    class Meta:
+        model = JobBid
+        fields = ["proposed_price", "message"]
+
+
+class ContractMessageForm(forms.ModelForm):
+    class Meta:
+        model = ContractMessage
+        fields = ["body"]
+        widgets = {"body": forms.Textarea(attrs={"rows": 3, "placeholder": "Write a message…"})}
+        labels = {"body": "Message"}

@@ -77,6 +77,20 @@
             transition: background .15s;
         }
         .btn-nav-logout:hover { background: rgba(255,255,255,.22); }
+        .nav-bell {
+            position: relative; display: inline-flex; align-items: center;
+            color: rgba(255,255,255,.88); font-size: .86rem;
+        }
+        .nav-bell:hover { color: #fff; text-decoration: none; }
+        .nav-bell-count {
+            position: absolute; top: -6px; right: -8px;
+            background: #ea4335; color: #fff;
+            font-size: .62rem; font-weight: 700;
+            min-width: 16px; height: 16px;
+            border-radius: 100px; padding: 0 3px;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1;
+        }
 
         /* ── Container ───────────────────────────────────── */
         .container { max-width: 1060px; margin: 2rem auto; padding: 0 1.5rem; }
@@ -349,12 +363,21 @@
     <a class="navbar-brand" href="{% url 'home' %}">StudentGig</a>
     <div class="navbar-links">
         <a href="{% url 'listing_list' %}">Browse</a>
+        <a href="{% url 'job_request_list' %}">Jobs</a>
         {% if request.user.is_authenticated %}
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'contracts' %}">Contracts</a>
             {% if request.user.userprofile.role == "student" %}
                 <a href="{% url 'listing_create' %}">Post a Service</a>
+            {% else %}
+                <a href="{% url 'job_request_create' %}">Post a Job</a>
             {% endif %}
+            <a href="{% url 'notifications_list' %}" class="nav-bell" title="Notifications">
+                &#9825;
+                {% if unread_notifications_count %}
+                    <span class="nav-bell-count">{{ unread_notifications_count }}</span>
+                {% endif %}
+            </a>
             <span class="navbar-sep">|</span>
             <span class="navbar-user">{{ request.user.username }}</span>
             <form method="post" action="{% url 'logout' %}" style="display:inline;">

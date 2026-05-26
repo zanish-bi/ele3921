@@ -86,7 +86,7 @@
             {% for contract in active_contracts %}
             <tr class="contract-row">
                 <td><a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a></td>
-                <td>{{ contract.bid.listing.title }}</td>
+                <td>{{ contract.listing_title }}</td>
                 <td>
                     {% if contract.student == request.user.userprofile %}
                         {{ contract.client }} <span style="font-size:.75rem;color:var(--muted);">(client)</span>
@@ -123,7 +123,7 @@
             {% for contract in completed_contracts %}
             <tr class="contract-row">
                 <td><a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a></td>
-                <td>{{ contract.bid.listing.title }}</td>
+                <td>{{ contract.listing_title }}</td>
                 <td>
                     {% if contract.student == request.user.userprofile %}
                         {{ contract.client }} <span style="font-size:.75rem;color:var(--muted);">(client)</span>

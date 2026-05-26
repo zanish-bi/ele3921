@@ -1,0 +1,43 @@
+{% extends "core/base.html" %}
+{% block title %}Notifications — StudentGig{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Notifications</h1>
+        <p>Your recent activity</p>
+    </div>
+    {% if notifs %}
+    <form method="post" action="{% url 'notifications_mark_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-sm">Mark all as read</button>
+    </form>
+    {% endif %}
+</div>
+
+<div>
+    {% for notif in notifs %}
+    <div class="card" style="margin-bottom:.65rem;
+        {% if not notif.is_read %}border-left:3px solid var(--navy);{% else %}opacity:.7;{% endif %}
+        padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+        <div style="flex:1;">
+            <div style="font-size:.9rem;{% if not notif.is_read %}font-weight:600;{% endif %}">
+                {% if notif.url %}
+                    <a href="{{ notif.url }}" style="color:var(--text);">{{ notif.message }}</a>
+                {% else %}
+                    {{ notif.message }}
+                {% endif %}
+            </div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem;">{{ notif.created_at|date:"N j, Y, g:i a" }}</div>
+        </div>
+        {% if not notif.is_read %}
+            <span class="badge badge-info" style="white-space:nowrap;">New</span>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="card" style="text-align:center;padding:2.5rem 1rem;">
+        <p class="empty-state">No notifications yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
