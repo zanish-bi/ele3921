@@ -30,6 +30,13 @@ if [ ! -f ".seeded" ]; then
     uv run python manage.py seed && touch .seeded
 fi
 
+# ── Free port 8000 if already in use ──────────────────────────────────────
+if lsof -Pi :8000 -sTCP:LISTEN -t &>/dev/null; then
+    echo "==> Port 8000 is in use — stopping existing process..."
+    lsof -ti :8000 | xargs kill -9 2>/dev/null || true
+    sleep 1
+fi
+
 echo ""
 echo "==> StudentGig is running at http://127.0.0.1:8000"
 echo ""

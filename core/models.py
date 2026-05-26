@@ -61,6 +61,7 @@ class Bid(models.Model):
 class Contract(models.Model):
     STATUS_CHOICES = [
         ("active", "Active"),
+        ("delivered", "Delivered"),   # student submitted work, awaiting client review
         ("completed", "Completed"),
         ("disputed", "Disputed"),
     ]
@@ -72,6 +73,7 @@ class Contract(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    admin_note = models.TextField(blank=True, default="")
 
     def __str__(self):
         return f"Contract #{self.pk} ({self.status})"

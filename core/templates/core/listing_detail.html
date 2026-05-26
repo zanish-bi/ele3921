@@ -2,14 +2,17 @@
 {% block title %}{{ listing.title }} — StudentGig{% endblock %}
 
 {% block content %}
-<div style="margin-bottom:1rem;">
-    <a href="{% url 'listing_list' %}" style="font-size:.85rem;color:#5f6368;">&larr; Back to listings</a>
+<div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
+    <a href="{% url 'listing_list' %}" style="font-size:.85rem;color:var(--muted);">&larr; Back to listings</a>
+    {% if is_owner %}
+        <a href="{% url 'listing_edit' listing.pk %}" class="btn btn-secondary btn-sm">Edit Listing</a>
+    {% endif %}
 </div>
 
 <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem;">
         <div>
-            <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.3rem;">{{ listing.title }}</h1>
+            <h1 style="font-family:var(--serif);font-size:1.5rem;font-weight:700;margin-bottom:.3rem;">{{ listing.title }}</h1>
             <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
                 <span class="badge badge-info">{{ listing.category.name }}</span>
                 <span class="badge badge-success">{% if listing.is_remote %}Remote{% else %}In-person{% endif %}</span>
@@ -21,8 +24,8 @@
             </div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:1.6rem;font-weight:800;color:#1a73e8;">${{ listing.price }}</div>
-            <div style="font-size:.8rem;color:#5f6368;">Listed by <a href="{% url 'profile_detail' listing.owner.user.pk %}">{{ listing.owner }}</a></div>
+            <div style="font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--navy);">${{ listing.price }}</div>
+            <div style="font-size:.8rem;color:var(--muted);">Listed by <a href="{% url 'profile_detail' listing.owner.user.pk %}">{{ listing.owner }}</a></div>
         </div>
     </div>
 
@@ -31,13 +34,64 @@
         <div class="detail-value" style="white-space:pre-wrap;">{{ listing.description }}</div>
     </div>
 
-    {% if listing.is_active and user.is_authenticated and request.user.userprofile.role == "client" %}
+    {# ── Bid CTA for KYC-verified clients who haven't bid yet ── #}
+    {% if can_bid %}
     <div style="margin-top:1.25rem;">
         <a href="{% url 'place_bid' listing.pk %}" class="btn btn-primary">Place a Bid</a>
     </div>
     {% endif %}
+
+    {# ── Client's own bid status ── #}
+    {% if my_bid %}
+    <div style="margin-top:1.25rem;padding:1rem;background:var(--warm-bg);border-radius:8px;border:1px solid var(--border);">
+        <div class="section-title">Your Bid</div>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem;">
+            <div>
+                <div class="detail-label">Proposed Price</div>
+                <div style="font-family:var(--serif);font-weight:700;color:var(--navy);font-size:1.1rem;">${{ my_bid.proposed_price }}</div>
+            </div>
+            <div>
+                <div class="detail-label">Status</div>
+                <div>
+                    {% if my_bid.status == "pending" %}
+                        <span class="badge badge-warning">Pending — awaiting response</span>
+                    {% elif my_bid.status == "accepted" %}
+                        <span class="badge badge-success">Accepted</span>
+                    {% elif my_bid.status == "rejected" %}
+                        <span class="badge badge-danger">Rejected</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="detail-label">Your Message</div>
+        <div style="font-size:.87rem;color:var(--text);margin-bottom:.75rem;">{{ my_bid.message }}</div>
+        {% if my_bid.status == "pending" %}
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <a href="{% url 'bid_edit' my_bid.pk %}" class="btn btn-secondary btn-sm">Edit Bid</a>
+            <form method="post" action="{% url 'bid_delete' my_bid.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Withdraw this bid?')">Withdraw Bid</button>
+            </form>
+        </div>
+        {% elif my_bid.status == "accepted" %}
+            {% if my_bid.contract %}
+            <a href="{% url 'contract_detail' my_bid.contract.pk %}" class="btn btn-primary btn-sm">View Contract</a>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# ── KYC notice for unverified clients ── #}
+    {% if request.user.is_authenticated and not my_bid and not can_bid and not is_owner %}
+        {% if request.user.userprofile.role == "client" and not request.user.userprofile.is_kyc_verified %}
+        <div class="alert alert-warning" style="margin-top:1.25rem;">
+            KYC verification required to place a bid. <a href="{% url 'dashboard' %}">Verify on dashboard</a>.
+        </div>
+        {% endif %}
+    {% endif %}
 </div>
 
+{# ── Owner: all bids table ── #}
 {% if bids is not None %}
 <div class="card">
     <div class="section-title">Bids ({{ bids|length }})</div>
@@ -55,9 +109,9 @@
         <tbody>
             {% for bid in bids %}
             <tr class="contract-row">
-                <td>{{ bid.client }}</td>
-                <td style="font-weight:600;">${{ bid.proposed_price }}</td>
-                <td style="color:#3c4043;">{{ bid.message }}</td>
+                <td><a href="{% url 'profile_detail' bid.client.user.pk %}">{{ bid.client }}</a></td>
+                <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                <td style="color:var(--text);">{{ bid.message }}</td>
                 <td>
                     {% if bid.status == "pending" %}
                         <span class="badge badge-warning">Pending</span>

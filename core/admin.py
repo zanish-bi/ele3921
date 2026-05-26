@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils import timezone
+from django.utils.html import format_html
 from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review
 
 
@@ -12,6 +14,7 @@ class PaymentInline(admin.StackedInline):
     model = Payment
     extra = 0
     readonly_fields = ["created_at"]
+    fields = ["amount", "status", "created_at"]
 
 
 @admin.register(UserProfile)
@@ -50,10 +53,98 @@ class BidAdmin(admin.ModelAdmin):
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
-    list_display = ["pk", "student", "client", "agreed_price", "status", "created_at"]
+    list_display = [
+        "pk", "student_username", "client_username",
+        "agreed_price", "payment_status_display", "status_display", "created_at",
+    ]
     list_filter = ["status"]
-    readonly_fields = ["created_at", "completed_at"]
+    readonly_fields = ["created_at", "completed_at", "student_username", "client_username"]
     inlines = [PaymentInline]
+    fieldsets = [
+        ("Parties", {"fields": ["student_username", "client_username", "bid"]}),
+        ("Contract", {"fields": ["student", "client", "agreed_price", "status", "created_at", "completed_at"]}),
+        ("Admin Message to Parties", {
+            "fields": ["admin_note"],
+            "description": (
+                "This message is displayed to both the student and client on the contract page. "
+                "Use it to communicate your decision on a dispute."
+            ),
+        }),
+    ]
+    actions = ["release_payment", "refund_payment"]
+
+    @admin.display(description="Student")
+    def student_username(self, obj):
+        u = obj.student.user
+        email = u.email or "—"
+        return format_html("<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>", u.username, email)
+
+    @admin.display(description="Client")
+    def client_username(self, obj):
+        u = obj.client.user
+        email = u.email or "—"
+        return format_html("<strong>{}</strong> <span style='color:#6b7280;font-size:.85em;'>({})</span>", u.username, email)
+
+    @admin.display(description="Payment")
+    def payment_status_display(self, obj):
+        try:
+            s = obj.payment.status
+        except Payment.DoesNotExist:
+            return "—"
+        colours = {"held": "#854d0e", "released": "#166534", "refunded": "#991b1b"}
+        return format_html(
+            "<span style='color:{};font-weight:600;'>{}</span>", colours.get(s, "#374151"), s.title()
+        )
+
+    @admin.display(description="Status")
+    def status_display(self, obj):
+        colours = {
+            "active": "#1e3a5f",
+            "delivered": "#b45309",
+            "completed": "#166534",
+            "disputed": "#991b1b",
+        }
+        icons = {
+            "active": "●",
+            "delivered": "▲",
+            "completed": "✔",
+            "disputed": "⚠",
+        }
+        return format_html(
+            "<span style='color:{};font-weight:700;'>{} {}</span>",
+            colours.get(obj.status, "#374151"),
+            icons.get(obj.status, ""),
+            obj.get_status_display(),
+        )
+
+    @admin.action(description="✔ Release payment → mark Completed")
+    def release_payment(self, request, queryset):
+        updated = 0
+        for contract in queryset.filter(status__in=["delivered", "disputed"]):
+            contract.status = "completed"
+            contract.completed_at = timezone.now()
+            contract.save()
+            try:
+                contract.payment.status = "released"
+                contract.payment.save()
+            except Payment.DoesNotExist:
+                pass
+            updated += 1
+        self.message_user(request, f"{updated} contract(s) completed and payment released.")
+
+    @admin.action(description="↩ Refund payment → mark Disputed/Resolved")
+    def refund_payment(self, request, queryset):
+        updated = 0
+        for contract in queryset.filter(status__in=["delivered", "disputed"]):
+            contract.status = "disputed"
+            contract.save()
+            try:
+                contract.payment.status = "refunded"
+                contract.payment.save()
+            except Payment.DoesNotExist:
+                pass
+            updated += 1
+        self.message_user(request, f"{updated} contract(s) payment refunded.")
 
 
 @admin.register(Payment)

@@ -1,36 +1,49 @@
 {% extends "core/base.html" %}
-{% block title %}Place a Bid — StudentGig{% endblock %}
+{% block title %}{% if editing_bid %}Edit Bid{% else %}Place a Bid{% endif %} — StudentGig{% endblock %}
 
 {% block content %}
 <div style="margin-bottom:1rem;">
-    <a href="{% url 'listing_detail' listing.pk %}" style="font-size:.85rem;color:#5f6368;">&larr; Back to listing</a>
+    <a href="{% url 'listing_detail' listing.pk %}" style="font-size:.85rem;color:var(--muted);">&larr; Back to listing</a>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
 
-    <div class="card" style="background:#f8f9fa;border:1px solid #e8eaed;">
+    <div class="card" style="background:var(--warm-bg);border:1px solid var(--border);">
         <div class="section-title">Service Details</div>
-        <div style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem;">{{ listing.title }}</div>
-        <div style="font-size:.85rem;color:#5f6368;margin-bottom:.75rem;">Listed at <strong style="color:#1a73e8;">${{ listing.price }}</strong></div>
-        <div style="font-size:.85rem;color:#3c4043;">{{ listing.description }}</div>
+        <div style="font-family:var(--serif);font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">{{ listing.title }}</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;">
+            Listed at <strong style="font-family:var(--serif);color:var(--navy);">${{ listing.price }}</strong>
+        </div>
+        <div style="font-size:.85rem;color:var(--text);">{{ listing.description }}</div>
     </div>
 
     <div class="form-wrap" style="max-width:100%;">
-        <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.25rem;">Place a Bid</h2>
+        <h2 style="font-family:var(--serif);font-size:1.15rem;font-weight:700;margin-bottom:1.25rem;">
+            {% if editing_bid %}Update Your Bid{% else %}Place a Bid{% endif %}
+        </h2>
         <form method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
             {% for field in form %}
             <div class="form-group">
                 {{ field.label_tag }}
-                {{ field }}
+                {% if field.html_name == "proposed_price" %}
+                <div style="display:flex;align-items:center;gap:.4rem;">
+                    <span style="font-family:var(--serif);font-weight:700;color:var(--navy);font-size:1rem;">$</span>
+                    {{ field }}
+                </div>
+                {% else %}
+                    {{ field }}
+                {% endif %}
                 {% if field.errors %}
                     <div class="form-errors">{{ field.errors }}</div>
                 {% endif %}
             </div>
             {% endfor %}
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Submit Bid</button>
+                <button type="submit" class="btn btn-primary">
+                    {% if editing_bid %}Update Bid{% else %}Submit Bid{% endif %}
+                </button>
                 <a href="{% url 'listing_detail' listing.pk %}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>

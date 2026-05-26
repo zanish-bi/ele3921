@@ -1,9 +1,15 @@
 {% extends "core/base.html" %}
-{% block title %}Post a Service — StudentGig{% endblock %}
+{% block title %}{% if editing %}Edit Listing{% else %}Post a Service{% endif %} — StudentGig{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>Post a Service</h1>
+    <div>
+        <h1>{% if editing %}Edit Listing{% else %}Post a Service{% endif %}</h1>
+        {% if editing %}<p>Update the details for <em>{{ listing.title }}</em></p>{% endif %}
+    </div>
+    {% if editing %}
+        <a href="{% url 'listing_detail' listing.pk %}" class="btn btn-secondary">&larr; Cancel</a>
+    {% endif %}
 </div>
 
 <div class="form-wrap">
@@ -13,14 +19,26 @@
         {% for field in form %}
         <div class="form-group">
             {{ field.label_tag }}
-            {{ field }}
+            {% if field.html_name == "price" %}
+            <div style="display:flex;align-items:center;gap:.4rem;">
+                <span style="font-family:var(--serif);font-weight:700;color:var(--navy);font-size:1rem;">$</span>
+                {{ field }}
+            </div>
+            {% else %}
+                {{ field }}
+            {% endif %}
             {% if field.errors %}
                 <div class="form-errors">{{ field.errors }}</div>
+            {% endif %}
+            {% if field.help_text %}
+                <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem;">{{ field.help_text }}</div>
             {% endif %}
         </div>
         {% endfor %}
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Listing</button>
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}Save Changes{% else %}Create Listing{% endif %}
+            </button>
             <a href="{% url 'listing_list' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>

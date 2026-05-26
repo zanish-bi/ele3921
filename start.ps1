@@ -27,6 +27,14 @@ if (-not (Test-Path ".seeded")) {
     New-Item -ItemType File -Path ".seeded" -Force | Out-Null
 }
 
+# ── Free port 8000 if already in use ──────────────────────────────────────
+$portPids = (Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue).OwningProcess
+if ($portPids) {
+    Write-Host "==> Stopping existing process on port 8000..."
+    $portPids | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+    Start-Sleep -Seconds 1
+}
+
 Write-Host ""
 Write-Host "==> StudentGig is running at http://127.0.0.1:8000" -ForegroundColor Green
 Write-Host ""

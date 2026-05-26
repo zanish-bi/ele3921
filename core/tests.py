@@ -1,20 +1,30 @@
 from decimal import Decimal
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib.admin.sites import AdminSite
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import ValidationError
 
 from core.models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review
 from core.forms import BidForm, ServiceListingForm
-from core.admin import UserProfileAdmin
+from core.admin import UserProfileAdmin, ContractAdmin
 
 
-# --- Helpers ---
+def make_admin_request():
+    """Return a minimal request with messages middleware for admin action tests."""
+    factory = RequestFactory()
+    request = factory.get("/")
+    request.session = {}
+    messages = FallbackStorage(request)
+    request._messages = messages
+    return request
+
+
+# ── Helpers ─────────────────────────────────────────────────────────────────
 
 def make_user(username, role, kyc=False):
     user = User.objects.create_user(username=username, password="pass")
-    # Signal auto-creates the profile; update it with the desired role/kyc
     profile = user.userprofile
     profile.role = role
     profile.is_kyc_verified = kyc
@@ -48,19 +58,19 @@ def make_bid(listing, client_profile, price="60.00", status="pending"):
     )
 
 
-def make_contract(bid, student, client_profile):
+def make_contract(bid, student, client_profile, status="active"):
     contract = Contract.objects.create(
         bid=bid,
         student=student,
         client=client_profile,
         agreed_price=bid.proposed_price,
-        status="active",
+        status=status,
     )
     Payment.objects.create(contract=contract, amount=contract.agreed_price, status="held")
     return contract
 
 
-# --- Model __str__ tests ---
+# ── Model __str__ tests ──────────────────────────────────────────────────────
 
 class ModelStrTests(TestCase):
     def setUp(self):
@@ -150,7 +160,7 @@ class ReviewValidatorTests(TestCase):
         review.full_clean()
 
 
-# --- Form tests ---
+# ── Form tests ───────────────────────────────────────────────────────────────
 
 class FormTests(TestCase):
     def setUp(self):
@@ -192,7 +202,7 @@ class FormTests(TestCase):
         self.assertIn("title", form.errors)
 
 
-# --- Admin action tests ---
+# ── Admin action tests ───────────────────────────────────────────────────────
 
 class AdminActionTests(TestCase):
     def setUp(self):
@@ -214,7 +224,45 @@ class AdminActionTests(TestCase):
         self.assertFalse(self.profile.is_kyc_verified)
 
 
-# --- Listing list view ---
+class ContractAdminActionTests(TestCase):
+    def setUp(self):
+        _, self.student = make_user("alice", "student")
+        _, self.client_profile = make_user("bob", "client", kyc=True)
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.bid = make_bid(self.listing, self.client_profile)
+        self.contract = make_contract(self.bid, self.student, self.client_profile, status="disputed")
+        self.admin_obj = ContractAdmin(Contract, AdminSite())
+
+    def test_release_payment_action(self):
+        req = make_admin_request()
+        qs = Contract.objects.filter(pk=self.contract.pk)
+        self.admin_obj.release_payment(req, qs)
+        self.contract.refresh_from_db()
+        self.assertEqual(self.contract.status, "completed")
+        self.contract.payment.refresh_from_db()
+        self.assertEqual(self.contract.payment.status, "released")
+
+    def test_refund_payment_action(self):
+        req = make_admin_request()
+        qs = Contract.objects.filter(pk=self.contract.pk)
+        self.admin_obj.refund_payment(req, qs)
+        self.contract.refresh_from_db()
+        self.assertEqual(self.contract.status, "disputed")
+        self.contract.payment.refresh_from_db()
+        self.assertEqual(self.contract.payment.status, "refunded")
+
+    def test_release_skips_non_disputed_contracts(self):
+        self.contract.status = "active"
+        self.contract.save()
+        req = make_admin_request()
+        qs = Contract.objects.filter(pk=self.contract.pk)
+        self.admin_obj.release_payment(req, qs)
+        self.contract.refresh_from_db()
+        self.assertEqual(self.contract.status, "active")
+
+
+# ── Listing list view ────────────────────────────────────────────────────────
 
 class ListingListViewTests(TestCase):
     def setUp(self):
@@ -248,7 +296,7 @@ class ListingListViewTests(TestCase):
         self.assertNotContains(response, "Inactive Service")
 
 
-# --- Listing detail view ---
+# ── Listing detail view ──────────────────────────────────────────────────────
 
 class ListingDetailViewTests(TestCase):
     def setUp(self):
@@ -284,7 +332,6 @@ class ListingDetailViewTests(TestCase):
 
     def test_user_without_profile_does_not_see_bids_section(self):
         ghost_user = User.objects.create_user(username="ghost", password="pass")
-        # Delete the signal-created profile to test the no-profile code path
         UserProfile.objects.filter(user=ghost_user).delete()
         self.client.login(username="ghost", password="pass")
         response = self.client.get(self.url)
@@ -295,8 +342,30 @@ class ListingDetailViewTests(TestCase):
         response = self.client.get(reverse("listing_detail", args=[9999]))
         self.assertEqual(response.status_code, 404)
 
+    def test_client_sees_own_bid_status(self):
+        make_bid(self.listing, self.client_profile)
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Your Bid")
 
-# --- Listing create view ---
+    def test_client_without_bid_sees_place_bid_button(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Place a Bid")
+
+    def test_client_with_pending_bid_does_not_see_place_bid_button(self):
+        make_bid(self.listing, self.client_profile)
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "Place a Bid")
+
+    def test_owner_sees_edit_listing_button(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Edit Listing")
+
+
+# ── Listing create view ──────────────────────────────────────────────────────
 
 class ListingCreateViewTests(TestCase):
     def setUp(self):
@@ -353,7 +422,56 @@ class ListingCreateViewTests(TestCase):
         self.assertFalse(ServiceListing.objects.exists())
 
 
-# --- Bid create view ---
+# ── Listing edit view ────────────────────────────────────────────────────────
+
+class ListingEditViewTests(TestCase):
+    def setUp(self):
+        self.student_user, self.student = make_user("alice", "student", kyc=True)
+        self.other_user, _ = make_user("bob", "client")
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.url = reverse("listing_edit", args=[self.listing.pk])
+
+    def test_requires_login(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_owner_can_access_edit_form(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Listing")
+
+    def test_non_owner_is_forbidden(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_update_listing(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.post(self.url, {
+            "category": self.category.pk,
+            "title": "Updated Title",
+            "description": "Updated desc.",
+            "price": "99.00",
+            "is_remote": True,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.listing.refresh_from_db()
+        self.assertEqual(self.listing.title, "Updated Title")
+
+    def test_invalid_form_rerenders(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.post(self.url, {
+            "category": self.category.pk,
+            "title": "",
+            "description": "x",
+            "price": "10.00",
+        })
+        self.assertEqual(response.status_code, 200)
+
+
+# ── Bid create view ──────────────────────────────────────────────────────────
 
 class BidCreateViewTests(TestCase):
     def setUp(self):
@@ -409,8 +527,96 @@ class BidCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Bid.objects.filter(listing=self.listing).exists())
 
+    def test_duplicate_pending_bid_redirects_with_error(self):
+        make_bid(self.listing, self.client_profile)
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url, {
+            "proposed_price": "55.00",
+            "message": "Another try.",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Bid.objects.filter(listing=self.listing, client=self.client_profile).count(), 1)
 
-# --- Bid accept view ---
+
+# ── Bid edit / delete views ──────────────────────────────────────────────────
+
+class BidEditViewTests(TestCase):
+    def setUp(self):
+        _, self.student = make_user("alice", "student")
+        self.client_user, self.client_profile = make_user("bob", "client", kyc=True)
+        _, self.other_profile = make_user("carol", "client", kyc=True)
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.bid = make_bid(self.listing, self.client_profile)
+        self.url = reverse("bid_edit", args=[self.bid.pk])
+
+    def test_requires_login(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_non_owner_is_forbidden(self):
+        self.client.login(username="carol", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_edit_pending_bid(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url, {
+            "proposed_price": "70.00",
+            "message": "Updated message.",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.bid.refresh_from_db()
+        self.assertEqual(self.bid.proposed_price, Decimal("70.00"))
+
+    def test_cannot_edit_non_pending_bid(self):
+        self.bid.status = "rejected"
+        self.bid.save()
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 400)
+
+
+class BidDeleteViewTests(TestCase):
+    def setUp(self):
+        _, self.student = make_user("alice", "student")
+        self.client_user, self.client_profile = make_user("bob", "client", kyc=True)
+        _, self.other_profile = make_user("carol", "client", kyc=True)
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.bid = make_bid(self.listing, self.client_profile)
+        self.url = reverse("bid_delete", args=[self.bid.pk])
+
+    def test_requires_login(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login/", response["Location"])
+
+    def test_get_not_allowed(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_non_owner_is_forbidden(self):
+        self.client.login(username="carol", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_withdraw_pending_bid(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Bid.objects.filter(pk=self.bid.pk).exists())
+
+    def test_cannot_withdraw_non_pending_bid(self):
+        self.bid.status = "accepted"
+        self.bid.save()
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 400)
+
+
+# ── Bid accept view ──────────────────────────────────────────────────────────
 
 class BidAcceptViewTests(TestCase):
     def setUp(self):
@@ -475,7 +681,7 @@ class BidAcceptViewTests(TestCase):
         self.assertEqual(other_bid.status, "rejected")
 
 
-# --- Bid reject view ---
+# ── Bid reject view ──────────────────────────────────────────────────────────
 
 class BidRejectViewTests(TestCase):
     def setUp(self):
@@ -520,7 +726,7 @@ class BidRejectViewTests(TestCase):
         self.assertRedirects(response, reverse("listing_detail", args=[self.listing.pk]))
 
 
-# --- Contract detail view ---
+# ── Contract detail view ─────────────────────────────────────────────────────
 
 class ContractDetailViewTests(TestCase):
     def setUp(self):
@@ -558,10 +764,19 @@ class ContractDetailViewTests(TestCase):
         response = self.client.get(reverse("contract_detail", args=[9999]))
         self.assertEqual(response.status_code, 404)
 
+    def test_admin_note_shown_when_set(self):
+        self.contract.admin_note = "Admin decision: payment released."
+        self.contract.save()
+        self.client.login(username="alice", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Admin decision: payment released.")
 
-# --- Contract complete view ---
 
-class ContractCompleteViewTests(TestCase):
+# ── Contract deliver / accept / reject views ─────────────────────────────────
+
+class ContractDeliverViewTests(TestCase):
+    """contract_complete now sets status → delivered (student submits work)."""
+
     def setUp(self):
         self.student_user, self.student = make_user("alice", "student")
         self.client_user, self.client_profile = make_user("bob", "client", kyc=True)
@@ -581,7 +796,7 @@ class ContractCompleteViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 405)
 
-    def test_client_cannot_complete_contract(self):
+    def test_client_cannot_submit_work(self):
         self.client.login(username="bob", password="pass")
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 403)
@@ -593,8 +808,52 @@ class ContractCompleteViewTests(TestCase):
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 400)
 
-    def test_student_completes_contract(self):
+    def test_student_submits_work_sets_delivered(self):
         self.client.login(username="alice", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.contract.refresh_from_db()
+        self.assertEqual(self.contract.status, "delivered")
+        # Payment still held until client accepts
+        self.contract.payment.refresh_from_db()
+        self.assertEqual(self.contract.payment.status, "held")
+        self.assertRedirects(response, reverse("contract_detail", args=[self.contract.pk]))
+
+
+class ContractAcceptViewTests(TestCase):
+    def setUp(self):
+        _, self.student = make_user("alice", "student")
+        self.client_user, self.client_profile = make_user("bob", "client", kyc=True)
+        _, self.other = make_user("carol", "student")
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.bid = make_bid(self.listing, self.client_profile)
+        self.contract = make_contract(self.bid, self.student, self.client_profile, status="delivered")
+        self.url = reverse("contract_accept", args=[self.contract.pk])
+
+    def test_requires_login(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_get_returns_405(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_student_cannot_accept_own_delivery(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_delivered_returns_400(self):
+        self.contract.status = "active"
+        self.contract.save()
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 400)
+
+    def test_client_accepts_delivery(self):
+        self.client.login(username="bob", password="pass")
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
         self.contract.refresh_from_db()
@@ -605,7 +864,50 @@ class ContractCompleteViewTests(TestCase):
         self.assertRedirects(response, reverse("contract_detail", args=[self.contract.pk]))
 
 
-# --- Dashboard view ---
+class ContractRejectViewTests(TestCase):
+    def setUp(self):
+        _, self.student = make_user("alice", "student")
+        self.client_user, self.client_profile = make_user("bob", "client", kyc=True)
+        self.category = make_category()
+        self.listing = make_listing(self.student, self.category)
+        self.bid = make_bid(self.listing, self.client_profile)
+        self.contract = make_contract(self.bid, self.student, self.client_profile, status="delivered")
+        self.url = reverse("contract_reject", args=[self.contract.pk])
+
+    def test_requires_login(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_get_returns_405(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_student_cannot_reject_own_delivery(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_delivered_returns_400(self):
+        self.contract.status = "active"
+        self.contract.save()
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 400)
+
+    def test_client_rejects_delivery_raises_dispute(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.contract.refresh_from_db()
+        self.assertEqual(self.contract.status, "disputed")
+        # Payment still held pending admin resolution
+        self.contract.payment.refresh_from_db()
+        self.assertEqual(self.contract.payment.status, "held")
+        self.assertRedirects(response, reverse("contract_detail", args=[self.contract.pk]))
+
+
+# ── Dashboard view ───────────────────────────────────────────────────────────
 
 class DashboardViewTests(TestCase):
     def setUp(self):
@@ -633,7 +935,7 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f"Contract #{self.contract.pk}")
 
-    def test_empty_dashboard_shows_no_contracts_message(self):
+    def test_empty_student_dashboard_shows_student_message(self):
         dan_user = User.objects.create_user(username="dan", password="pass")
         dan_user.userprofile.role = "student"
         dan_user.userprofile.save()
@@ -641,10 +943,44 @@ class DashboardViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No contracts as student.")
+        self.assertNotContains(response, "No contracts as client.")
+
+    def test_empty_client_dashboard_shows_client_message(self):
+        eve_user = User.objects.create_user(username="eve", password="pass")
+        eve_user.userprofile.role = "client"
+        eve_user.userprofile.save()
+        self.client.login(username="eve", password="pass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No contracts as client.")
+        self.assertNotContains(response, "No contracts as student.")
+
+    def test_student_sees_pending_received_bids(self):
+        # Fresh listing, fresh bid that hasn't been accepted
+        listing2 = make_listing(self.student, self.category, title="New Service")
+        _, c2 = make_user("client2", "client", kyc=True)
+        make_bid(listing2, c2)
+        self.client.login(username="alice", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Bids Received")
+
+    def test_client_sees_submitted_bids_section(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertContains(response, "Your Submitted Bids")
+
+    def test_student_does_not_see_your_hires(self):
+        self.client.login(username="alice", password="pass")
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "Your Hires (as Client)")
+
+    def test_client_does_not_see_your_work(self):
+        self.client.login(username="bob", password="pass")
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "Your Work (as Student)")
 
 
-# --- Home and register views ---
+# ── Home and register views ──────────────────────────────────────────────────
 
 class HomeViewTests(TestCase):
     def test_home_renders(self):

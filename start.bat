@@ -30,6 +30,11 @@ if not exist ".seeded" (
     uv run python manage.py seed && echo. > .seeded
 )
 
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000 "') do (
+    echo ==^> Stopping process on port 8000...
+    taskkill /F /PID %%a >nul 2>&1
+)
+
 echo.
 echo ==^> StudentGig is running at http://127.0.0.1:8000
 echo.

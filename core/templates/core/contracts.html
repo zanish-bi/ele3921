@@ -6,18 +6,81 @@
     <h1>My Contracts</h1>
 </div>
 
+{# ── Pending bids (student: received; client: submitted) ── #}
+{% if received_bids %}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title">Bids Received on Your Listings</div>
+    <table class="table">
+        <thead>
+            <tr><th>Listing</th><th>Client</th><th>Amount</th><th>Message</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for bid in received_bids %}
+            <tr class="contract-row">
+                <td><a href="{% url 'listing_detail' bid.listing.pk %}">{{ bid.listing.title }}</a></td>
+                <td><a href="{% url 'profile_detail' bid.client.user.pk %}">{{ bid.client }}</a></td>
+                <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                <td style="color:var(--muted);font-size:.84rem;">{{ bid.message|truncatechars:60 }}</td>
+                <td>
+                    <form method="post" action="{% url 'bid_accept' bid.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                    </form>
+                    <form method="post" action="{% url 'bid_reject' bid.pk %}" style="display:inline;margin-left:.3rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if my_bids %}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="section-title">Your Submitted Bids</div>
+    <table class="table">
+        <thead>
+            <tr><th>Listing</th><th>Provider</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for bid in my_bids %}
+            <tr class="contract-row">
+                <td><a href="{% url 'listing_detail' bid.listing.pk %}">{{ bid.listing.title }}</a></td>
+                <td><a href="{% url 'profile_detail' bid.listing.owner.user.pk %}">{{ bid.listing.owner }}</a></td>
+                <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                <td>
+                    {% if bid.status == "pending" %}
+                        <span class="badge badge-warning">Pending</span>
+                    {% elif bid.status == "rejected" %}
+                        <span class="badge badge-danger">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if bid.status == "pending" %}
+                    <a href="{% url 'bid_edit' bid.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                    <form method="post" action="{% url 'bid_delete' bid.pk %}" style="display:inline;margin-left:.3rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Withdraw bid?')">Withdraw</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ── Active / Delivered contracts ── #}
 <div class="card" style="margin-bottom:1.5rem;">
     <div class="section-title">Active Contracts</div>
     {% if active_contracts %}
     <table class="table">
         <thead>
-            <tr>
-                <th>Contract</th>
-                <th>Service</th>
-                <th>Other Party</th>
-                <th>Agreed Price</th>
-                <th></th>
-            </tr>
+            <tr><th>Contract</th><th>Service</th><th>Other Party</th><th>Price</th><th>Status</th></tr>
         </thead>
         <tbody>
             {% for contract in active_contracts %}
@@ -26,13 +89,19 @@
                 <td>{{ contract.bid.listing.title }}</td>
                 <td>
                     {% if contract.student == request.user.userprofile %}
-                        {{ contract.client }} <span style="font-size:.75rem;color:#5f6368;">(client)</span>
+                        {{ contract.client }} <span style="font-size:.75rem;color:var(--muted);">(client)</span>
                     {% else %}
-                        {{ contract.student }} <span style="font-size:.75rem;color:#5f6368;">(student)</span>
+                        {{ contract.student }} <span style="font-size:.75rem;color:var(--muted);">(student)</span>
                     {% endif %}
                 </td>
-                <td style="font-weight:600;">${{ contract.agreed_price }}</td>
-                <td><span class="badge badge-info">Active</span></td>
+                <td style="font-family:var(--serif);font-weight:700;">${{ contract.agreed_price }}</td>
+                <td>
+                    {% if contract.status == "active" %}
+                        <span class="badge badge-info">Active</span>
+                    {% elif contract.status == "delivered" %}
+                        <span class="badge badge-warning">Review Needed</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,18 +111,13 @@
     {% endif %}
 </div>
 
+{# ── Completed / Disputed contracts ── #}
 <div class="card">
-    <div class="section-title">Completed Contracts</div>
+    <div class="section-title">Completed &amp; Disputed</div>
     {% if completed_contracts %}
     <table class="table">
         <thead>
-            <tr>
-                <th>Contract</th>
-                <th>Service</th>
-                <th>Other Party</th>
-                <th>Agreed Price</th>
-                <th></th>
-            </tr>
+            <tr><th>Contract</th><th>Service</th><th>Other Party</th><th>Price</th><th>Status</th></tr>
         </thead>
         <tbody>
             {% for contract in completed_contracts %}
@@ -62,13 +126,19 @@
                 <td>{{ contract.bid.listing.title }}</td>
                 <td>
                     {% if contract.student == request.user.userprofile %}
-                        {{ contract.client }} <span style="font-size:.75rem;color:#5f6368;">(client)</span>
+                        {{ contract.client }} <span style="font-size:.75rem;color:var(--muted);">(client)</span>
                     {% else %}
-                        {{ contract.student }} <span style="font-size:.75rem;color:#5f6368;">(student)</span>
+                        {{ contract.student }} <span style="font-size:.75rem;color:var(--muted);">(student)</span>
                     {% endif %}
                 </td>
-                <td style="font-weight:600;">${{ contract.agreed_price }}</td>
-                <td><span class="badge badge-success">Completed</span></td>
+                <td style="font-family:var(--serif);font-weight:700;">${{ contract.agreed_price }}</td>
+                <td>
+                    {% if contract.status == "completed" %}
+                        <span class="badge badge-success">Completed</span>
+                    {% elif contract.status == "disputed" %}
+                        <span class="badge badge-danger">Disputed</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -78,5 +148,5 @@
     {% endif %}
 </div>
 
-<a href="{% url 'listing_list' %}" class="btn btn-secondary">&larr; Browse Listings</a>
+<a href="{% url 'listing_list' %}" class="btn btn-secondary" style="margin-top:.5rem;">&larr; Browse Listings</a>
 {% endblock %}

@@ -29,19 +29,51 @@
 </div>
 {% endif %}
 
+{% if request.user.userprofile.role == "student" %}
+
+{# ══ STUDENT DASHBOARD ══════════════════════════════════════════════════════ #}
 <div class="dash-grid">
 
+    {# Pending bids received on student's listings #}
+    <div class="card">
+        <div class="section-title">Bids Received</div>
+        {% if received_bids %}
+        <table class="table">
+            <thead>
+                <tr><th>Listing</th><th>Client</th><th>Amount</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for bid in received_bids %}
+                <tr class="contract-row">
+                    <td><a href="{% url 'listing_detail' bid.listing.pk %}">{{ bid.listing.title }}</a></td>
+                    <td><a href="{% url 'profile_detail' bid.client.user.pk %}">{{ bid.client }}</a></td>
+                    <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                    <td>
+                        <form method="post" action="{% url 'bid_accept' bid.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                        </form>
+                        <form method="post" action="{% url 'bid_reject' bid.pk %}" style="display:inline;margin-left:.3rem;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No pending bids on your listings.</p>
+        {% endif %}
+    </div>
+
+    {# Student's active contracts #}
     <div class="card">
         <div class="section-title">Your Work (as Student)</div>
         {% if student_contracts %}
         <table class="table">
             <thead>
-                <tr>
-                    <th>Contract</th>
-                    <th>Service</th>
-                    <th>Client</th>
-                    <th>Status</th>
-                </tr>
+                <tr><th>Contract</th><th>Service</th><th>Client</th><th>Status</th></tr>
             </thead>
             <tbody>
                 {% for contract in student_contracts %}
@@ -52,6 +84,8 @@
                     <td>
                         {% if contract.status == "active" %}
                             <span class="badge badge-info">Active</span>
+                        {% elif contract.status == "delivered" %}
+                            <span class="badge badge-warning">Submitted</span>
                         {% elif contract.status == "completed" %}
                             <span class="badge badge-success">Completed</span>
                         {% else %}
@@ -67,17 +101,64 @@
         {% endif %}
     </div>
 
+</div>
+
+<div style="display:flex;gap:.75rem;margin-top:.5rem;">
+    <a href="{% url 'listing_list' %}" class="btn btn-secondary">Browse Listings</a>
+    <a href="{% url 'listing_create' %}" class="btn btn-primary">Post a Service</a>
+    <a href="{% url 'contracts' %}" class="btn btn-secondary">All Contracts</a>
+</div>
+
+{% else %}
+
+{# ══ CLIENT DASHBOARD ═══════════════════════════════════════════════════════ #}
+<div class="dash-grid">
+
+    {# Client's submitted bids #}
+    <div class="card">
+        <div class="section-title">Your Submitted Bids</div>
+        {% if my_bids %}
+        <table class="table">
+            <thead>
+                <tr><th>Listing</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for bid in my_bids %}
+                <tr class="contract-row">
+                    <td><a href="{% url 'listing_detail' bid.listing.pk %}">{{ bid.listing.title }}</a></td>
+                    <td style="font-family:var(--serif);font-weight:700;color:var(--navy);">${{ bid.proposed_price }}</td>
+                    <td>
+                        {% if bid.status == "pending" %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% elif bid.status == "rejected" %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if bid.status == "pending" %}
+                        <a href="{% url 'bid_edit' bid.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                        <form method="post" action="{% url 'bid_delete' bid.pk %}" style="display:inline;margin-left:.3rem;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Withdraw bid?')">Withdraw</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No bids submitted yet.</p>
+        {% endif %}
+    </div>
+
+    {# Client's contracts #}
     <div class="card">
         <div class="section-title">Your Hires (as Client)</div>
         {% if client_contracts %}
         <table class="table">
             <thead>
-                <tr>
-                    <th>Contract</th>
-                    <th>Service</th>
-                    <th>Student</th>
-                    <th>Status</th>
-                </tr>
+                <tr><th>Contract</th><th>Service</th><th>Student</th><th>Status</th></tr>
             </thead>
             <tbody>
                 {% for contract in client_contracts %}
@@ -88,6 +169,8 @@
                     <td>
                         {% if contract.status == "active" %}
                             <span class="badge badge-info">Active</span>
+                        {% elif contract.status == "delivered" %}
+                            <span class="badge badge-warning">Review Needed</span>
                         {% elif contract.status == "completed" %}
                             <span class="badge badge-success">Completed</span>
                         {% else %}
@@ -107,9 +190,8 @@
 
 <div style="display:flex;gap:.75rem;margin-top:.5rem;">
     <a href="{% url 'listing_list' %}" class="btn btn-secondary">Browse Listings</a>
-    {% if request.user.userprofile.role == "student" %}
-        <a href="{% url 'listing_create' %}" class="btn btn-primary">Post a Service</a>
-    {% endif %}
     <a href="{% url 'contracts' %}" class="btn btn-secondary">All Contracts</a>
 </div>
+
+{% endif %}
 {% endblock %}

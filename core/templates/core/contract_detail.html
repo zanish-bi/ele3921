@@ -2,10 +2,9 @@
 {% block title %}Contract #{{ contract.pk }} — StudentGig{% endblock %}
 
 {% block content %}
-<div style="margin-bottom:1rem;">
-    <a href="{% url 'dashboard' %}" style="font-size:.85rem;color:#5f6368;">&larr; Dashboard</a>
-    &nbsp;&nbsp;
-    <a href="{% url 'contracts' %}" style="font-size:.85rem;color:#5f6368;">All Contracts</a>
+<div style="margin-bottom:1rem;display:flex;gap:1.2rem;flex-wrap:wrap;">
+    <a href="{% url 'dashboard' %}" style="font-size:.85rem;color:var(--muted);">&larr; Dashboard</a>
+    <a href="{% url 'contracts' %}" style="font-size:.85rem;color:var(--muted);">All Contracts</a>
 </div>
 
 <div class="page-header">
@@ -16,6 +15,8 @@
     <div>
         {% if contract.status == "active" %}
             <span class="badge badge-info" style="font-size:.85rem;padding:.3rem .8rem;">Active</span>
+        {% elif contract.status == "delivered" %}
+            <span class="badge badge-warning" style="font-size:.85rem;padding:.3rem .8rem;">Work Submitted — Pending Review</span>
         {% elif contract.status == "completed" %}
             <span class="badge badge-success" style="font-size:.85rem;padding:.3rem .8rem;">Completed</span>
         {% elif contract.status == "disputed" %}
@@ -64,37 +65,78 @@
                 {% endif %}
             </div>
         </div>
+
+        {# ── Admin message (dispute resolution note) ── #}
+        {% if contract.admin_note %}
+        <div class="card" style="border:2px solid var(--navy);">
+            <div class="section-title">Admin Message</div>
+            <p style="font-size:.87rem;color:var(--text);white-space:pre-wrap;">{{ contract.admin_note }}</p>
+        </div>
+        {% endif %}
     </div>
 
     <div>
+        {# ── Payment panel ── #}
         <div class="card">
-            <div class="section-title">Payment</div>
-            <div style="font-size:1.6rem;font-weight:800;color:#1a73e8;margin-bottom:.5rem;">${{ contract.payment.amount }}</div>
+            <div class="section-title">Payment (Escrow)</div>
+            <div style="font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--navy);margin-bottom:.5rem;">${{ contract.payment.amount }}</div>
             <div>
                 {% if contract.payment.status == "held" %}
                     <span class="badge badge-warning">Held in escrow</span>
                 {% elif contract.payment.status == "released" %}
-                    <span class="badge badge-success">Released</span>
+                    <span class="badge badge-success">Released to student</span>
                 {% elif contract.payment.status == "refunded" %}
-                    <span class="badge badge-danger">Refunded</span>
+                    <span class="badge badge-danger">Refunded to client</span>
                 {% endif %}
             </div>
         </div>
 
-        {% if contract.status == "active" and request.user.userprofile.role == "student" %}
-        <div class="card" style="border:2px solid #34a853;">
-            <div class="section-title" style="color:#137333;">Mark Complete</div>
-            <p style="font-size:.85rem;color:#5f6368;margin-bottom:1rem;">Once you mark this contract complete, the payment will be released and both parties can leave a review.</p>
+        {# ── Student action: Submit Work (active only) ── #}
+        {% if contract.status == "active" and profile == contract.student %}
+        <div class="card" style="border:2px solid var(--navy);">
+            <div class="section-title">Submit Work</div>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+                When you've delivered the work to the client, click below. The client will then accept or raise a dispute.
+            </p>
             <form method="post" action="{% url 'contract_complete' contract.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-success" style="width:100%;">Mark as Complete</button>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Submit Work for Review</button>
             </form>
         </div>
         {% endif %}
 
+        {# ── Client action: Accept or Reject delivery ── #}
+        {% if contract.status == "delivered" and profile == contract.client %}
+        <div class="card" style="border:2px solid #b45309;">
+            <div class="section-title" style="color:#b45309;">Review Delivery</div>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+                The service provider has submitted their work. Review it and accept or raise a dispute.
+            </p>
+            <form method="post" action="{% url 'contract_accept' contract.pk %}" style="margin-bottom:.6rem;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" style="width:100%;">Accept &amp; Release Payment</button>
+            </form>
+            <form method="post" action="{% url 'contract_reject' contract.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" style="width:100%;" onclick="return confirm('Raise a dispute? An admin will review the case.')">Raise a Dispute</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {# ── Disputed: waiting for admin ── #}
+        {% if contract.status == "disputed" %}
+        <div class="card" style="border:2px solid var(--red);">
+            <div class="section-title" style="color:var(--red);">Dispute in Progress</div>
+            <p style="font-size:.85rem;color:var(--muted);">
+                An admin has been notified and is reviewing this dispute. Check back for an admin message below.
+            </p>
+        </div>
+        {% endif %}
+
+        {# ── Completed: Leave a Review ── #}
         {% if contract.status == "completed" %}
-        <div class="card" style="border:2px solid #1a73e8;">
-            <div class="section-title" style="color:#1967d2;">Review</div>
+        <div class="card" style="border:2px solid var(--navy);">
+            <div class="section-title">Review</div>
             <a href="{% url 'review_create' contract.pk %}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">Leave a Review</a>
         </div>
         {% endif %}
