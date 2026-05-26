@@ -14,6 +14,7 @@ urlpatterns = [
     path("contracts/<int:pk>/complete/", views.contract_complete, name="contract_complete"),
     path("accounts/register/", views.register, name="register"),
     path("contracts/", views.contracts, name="contracts"),
+    path("accounts/kyc-verify/", views.kyc_self_verify, name="kyc_self_verify"),
     path("profiles/<int:user_pk>/", views.profile_detail, name="profile_detail"),
     path("contracts/<int:contract_pk>/review/", views.review_create, name="review_create"),
 ]

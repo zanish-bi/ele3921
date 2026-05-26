@@ -32,11 +32,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
                 <div>
                     <div class="detail-label">Student (Provider)</div>
-                    <div class="detail-value">{{ contract.student }}</div>
+                    <div class="detail-value"><a href="{% url 'profile_detail' contract.student.user.pk %}">{{ contract.student }}</a></div>
                 </div>
                 <div>
                     <div class="detail-label">Client (Buyer)</div>
-                    <div class="detail-value">{{ contract.client }}</div>
+                    <div class="detail-value"><a href="{% url 'profile_detail' contract.client.user.pk %}">{{ contract.client }}</a></div>
                 </div>
             </div>
         </div>

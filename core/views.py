@@ -197,6 +197,16 @@ def register(request):
     
     return render(request, "registration/register.html", {"form": form})
 
+@login_required
+@require_POST
+def kyc_self_verify(request):
+    profile = get_object_or_404(UserProfile, user=request.user)
+    profile.is_kyc_verified = True
+    profile.save()
+    messages.success(request, "KYC verified (test mode). You can now post listings and place bids.")
+    return redirect("dashboard")
+
+
 def profile_detail(request, user_pk):
     profile = get_object_or_404(UserProfile, user__pk=user_pk)
     listings = profile.listings.filter(is_active=True) if profile.role == "student" else None

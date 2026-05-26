@@ -2,33 +2,304 @@
 {% block title %}Leave a Review — StudentGig{% endblock %}
 
 {% block content %}
-<div style="margin-bottom:1rem;">
-    <a href="{% url 'contract_detail' contract.pk %}" style="font-size:.85rem;color:#5f6368;">&larr; Back to contract</a>
-</div>
+<style>
+    .rv-vars {
+        --navy: #1e3a5f;
+        --border: #e5e0d5;
+        --warm: #f7f4ee;
+        --star-active: #c8922a;
+        --star-hover: #e8a830;
+        --star-empty: #dbd5c8;
+        --serif: Georgia,"Times New Roman",serif;
+        --sans: -apple-system,"Segoe UI",Helvetica,sans-serif;
+    }
 
-<div style="display:flex;justify-content:center;">
-    <div class="form-wrap">
-        <h1 style="font-size:1.3rem;font-weight:700;margin-bottom:.3rem;">Leave a Review</h1>
-        <p style="font-size:.87rem;color:#5f6368;margin-bottom:1.4rem;">
-            Contract #{{ contract.pk }} &mdash; {{ contract.bid.listing.title }}
-        </p>
-        <form method="post">
+    .rv-page {
+        max-width:560px;
+        margin:0 auto;
+        animation: rv-up .35s ease both;
+    }
+
+    @keyframes rv-up {
+        from { opacity:0;transform:translateY(12px); }
+        to   { opacity:1;transform:translateY(0); }
+    }
+
+    /* Receipt card */
+    .rv-receipt {
+        background:var(--warm);
+        border:1px solid var(--border);
+        border-radius:12px;
+        padding:1.2rem 1.4rem;
+        margin-bottom:1.75rem;
+        display:flex;gap:1rem;align-items:flex-start;
+    }
+    .rv-receipt-icon {
+        width:40px;height:40px;
+        background:var(--navy);
+        border-radius:8px;
+        display:flex;align-items:center;justify-content:center;
+        color:#fff;font-size:1.1rem;
+        flex-shrink:0;
+    }
+    .rv-receipt-eyebrow {
+        font-family:var(--sans);
+        font-size:.68rem;font-weight:700;
+        letter-spacing:1.2px;
+        text-transform:uppercase;
+        color:#9ca3af;
+        margin-bottom:.22rem;
+    }
+    .rv-receipt-title {
+        font-family:var(--serif);
+        font-size:1.05rem;font-weight:700;
+        color:#1a1a28;line-height:1.3;
+    }
+    .rv-receipt-sub {
+        font-family:var(--sans);
+        font-size:.77rem;color:#6b7280;
+        margin-top:.15rem;
+    }
+
+    /* Form card */
+    .rv-card {
+        background:#fff;
+        border:1px solid var(--border);
+        border-radius:14px;
+        padding:2rem;
+    }
+    .rv-card-heading {
+        font-family:var(--serif);
+        font-size:1.3rem;font-weight:700;
+        color:#1a1a28;
+        padding-bottom:1rem;
+        border-bottom:1px solid var(--border);
+        margin-bottom:1.5rem;
+    }
+
+    /* Field label */
+    .rv-label {
+        font-family:var(--sans);
+        font-size:.82rem;font-weight:600;
+        color:#374151;
+        display:block;
+        margin-bottom:.45rem;
+    }
+    .rv-optional { color:#9ca3af;font-weight:400; }
+
+    /* Star picker */
+    .rv-stars {
+        display:flex;gap:.2rem;
+        margin-bottom:.3rem;
+    }
+    .rv-star {
+        font-size:2.1rem;
+        line-height:1;
+        cursor:pointer;
+        color:var(--star-empty);
+        background:none;border:none;padding:.05rem;
+        transition:color .1s,transform .12s;
+        -webkit-tap-highlight-color:transparent;
+    }
+    .rv-star.lit     { color:var(--star-active); }
+    .rv-star.preview { color:var(--star-hover);transform:scale(1.08); }
+    .rv-star-hint {
+        font-family:var(--sans);
+        font-size:.75rem;
+        color:#9ca3af;
+        min-height:1.1rem;
+        margin-bottom:1.25rem;
+        transition:color .1s;
+    }
+
+    /* Fallback select (shown only if JS is disabled) */
+    .rv-select-wrap select {
+        width:100%;
+        padding:.5rem .75rem;
+        border:1px solid var(--border);
+        border-radius:7px;
+        font-family:var(--sans);
+        font-size:.9rem;
+        color:#374151;
+        background:#fff;
+        margin-bottom:1.25rem;
+    }
+    .rv-select-wrap.js-gone { display:none; }
+
+    /* Comment textarea */
+    .rv-comment {
+        width:100%;
+        min-height:106px;
+        padding:.72rem 1rem;
+        border:1px solid var(--border);
+        border-radius:8px;
+        font-family:var(--sans);
+        font-size:.9rem;
+        color:#374151;
+        line-height:1.65;
+        resize:vertical;
+        background:#fafaf8;
+        transition:border-color .15s,box-shadow .15s;
+    }
+    .rv-comment:focus {
+        outline:none;
+        border-color:var(--navy);
+        box-shadow:0 0 0 3px rgba(30,58,95,.1);
+        background:#fff;
+    }
+
+    /* Submit row */
+    .rv-actions {
+        display:flex;align-items:center;gap:1rem;
+        margin-top:1.5rem;
+        padding-top:1.25rem;
+        border-top:1px solid var(--border);
+    }
+    .rv-submit {
+        background:var(--navy);color:#fff;
+        border:none;
+        padding:.65rem 1.75rem;
+        border-radius:8px;
+        font-family:var(--sans);
+        font-size:.9rem;font-weight:600;
+        cursor:pointer;
+        transition:background .15s,transform .1s;
+    }
+    .rv-submit:hover  { background:#162d4d;transform:translateY(-1px); }
+    .rv-submit:active { transform:translateY(0); }
+    .rv-cancel {
+        font-family:var(--sans);
+        font-size:.85rem;color:#9ca3af;
+        text-decoration:none;
+    }
+    .rv-cancel:hover { color:#6b7280; }
+</style>
+
+<div class="rv-vars">
+<div class="rv-page">
+
+    <div style="margin-bottom:1.2rem;">
+        <a href="{% url 'contract_detail' contract.pk %}" style="font-family:-apple-system,sans-serif;font-size:.84rem;color:#6b7280;">&larr; Back to contract</a>
+    </div>
+
+    <!-- Receipt / context -->
+    <div class="rv-receipt">
+        <div class="rv-receipt-icon">&#10022;</div>
+        <div>
+            <div class="rv-receipt-eyebrow">Reviewing completed contract</div>
+            <div class="rv-receipt-title">{{ contract.bid.listing.title }}</div>
+            <div class="rv-receipt-sub">Contract #{{ contract.pk }}</div>
+        </div>
+    </div>
+
+    <!-- Form card -->
+    <div class="rv-card">
+        <div class="rv-card-heading">Leave Your Review</div>
+
+        <form method="post" id="rv-form">
             {% csrf_token %}
-            {{ form.non_field_errors }}
-            {% for field in form %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.errors %}
-                    <div class="form-errors">{{ field.errors }}</div>
+
+            <!-- Rating -->
+            <div>
+                <label class="rv-label">Rating <span style="color:#c5221f;">*</span></label>
+
+                <!-- JS star picker (hidden until JS runs) -->
+                <div class="rv-stars" id="rv-star-row" style="display:none;" aria-hidden="true">
+                    <button type="button" class="rv-star" data-v="1">&#9733;</button>
+                    <button type="button" class="rv-star" data-v="2">&#9733;</button>
+                    <button type="button" class="rv-star" data-v="3">&#9733;</button>
+                    <button type="button" class="rv-star" data-v="4">&#9733;</button>
+                    <button type="button" class="rv-star" data-v="5">&#9733;</button>
+                </div>
+                <div class="rv-star-hint" id="rv-hint"></div>
+
+                <!-- Fallback select for no-JS -->
+                <div class="rv-select-wrap" id="rv-sel-wrap">
+                    {{ form.rating }}
+                    {% if form.rating.errors %}
+                        <div class="form-errors">{{ form.rating.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Comment -->
+            <div>
+                <label class="rv-label" for="{{ form.comment.id_for_label }}">
+                    Comment <span class="rv-optional">(optional)</span>
+                </label>
+                <textarea
+                    name="{{ form.comment.html_name }}"
+                    id="{{ form.comment.id_for_label }}"
+                    class="rv-comment"
+                    placeholder="Share what it was like working with this person&hellip;">{{ form.comment.value|default:'' }}</textarea>
+                {% if form.comment.errors %}
+                    <div class="form-errors">{{ form.comment.errors }}</div>
                 {% endif %}
             </div>
-            {% endfor %}
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Submit Review</button>
-                <a href="{% url 'contract_detail' contract.pk %}" class="btn btn-secondary">Cancel</a>
+
+            <div class="rv-actions">
+                <button type="submit" class="rv-submit">Submit Review</button>
+                <a href="{% url 'contract_detail' contract.pk %}" class="rv-cancel">Cancel</a>
             </div>
         </form>
     </div>
-</div>
+
+</div><!-- /rv-page -->
+</div><!-- /rv-vars -->
+
+<script>
+(function () {
+    var row   = document.getElementById('rv-star-row');
+    var hint  = document.getElementById('rv-hint');
+    var selWrap = document.getElementById('rv-sel-wrap');
+    var sel   = document.getElementById('id_rating');
+    if (!row || !sel) return;
+
+    var stars  = row.querySelectorAll('.rv-star');
+    var labels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+    var current = sel.value ? parseInt(sel.value, 10) : 0;
+
+    /* Activate JS path */
+    row.style.display = 'flex';
+    selWrap.classList.add('js-gone');
+
+    function paint(n, cls) {
+        stars.forEach(function (s, i) {
+            s.classList.remove('lit', 'preview');
+            if (i < n) s.classList.add(cls);
+        });
+    }
+
+    function commit(n) {
+        current = n;
+        sel.value = n;
+        paint(n, 'lit');
+        hint.textContent = n ? labels[n] : '';
+    }
+
+    stars.forEach(function (s) {
+        var v = parseInt(s.dataset.v, 10);
+        s.addEventListener('click', function () { commit(v); });
+        s.addEventListener('mouseenter', function () {
+            paint(v, 'preview');
+            hint.textContent = labels[v];
+        });
+        s.addEventListener('focus', function () {
+            paint(v, 'preview');
+            hint.textContent = labels[v];
+        });
+    });
+
+    row.addEventListener('mouseleave', function () { commit(current); });
+
+    /* Keyboard support: arrow keys cycle rating */
+    row.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' && current < 5) commit(current + 1);
+        if (e.key === 'ArrowLeft'  && current > 1) commit(current - 1);
+    });
+
+    if (current) commit(current);
+}());
+</script>
+
 {% endblock %}

@@ -22,7 +22,7 @@
         </div>
         <div style="text-align:right;">
             <div style="font-size:1.6rem;font-weight:800;color:#1a73e8;">${{ listing.price }}</div>
-            <div style="font-size:.8rem;color:#5f6368;">Listed by {{ listing.owner }}</div>
+            <div style="font-size:.8rem;color:#5f6368;">Listed by <a href="{% url 'profile_detail' listing.owner.user.pk %}">{{ listing.owner }}</a></div>
         </div>
     </div>
 

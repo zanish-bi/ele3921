@@ -21,8 +21,14 @@
 </div>
 
 {% if not request.user.userprofile.is_kyc_verified %}
-<div class="alert alert-warning">
-    Your account is pending KYC verification. An admin will review and activate your account before you can post listings or place bids.
+<div class="alert alert-warning" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+    <span>Your account is pending KYC verification. You cannot post listings or place bids until verified.</span>
+    <form method="post" action="{% url 'kyc_self_verify' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm" style="background:#f9d976;color:#7a4f00;border:1px solid #e0b800;white-space:nowrap;">
+            &#9432; Simulate KYC Verification (Test Mode)
+        </button>
+    </form>
 </div>
 {% endif %}
 
