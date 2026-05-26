@@ -1,39 +1,53 @@
-<!DOCTYPE html>
-<html>
-<head><title>Browse Listings</title></head>
-<body>
-<h1>Service Listings</h1>
+{% extends "core/base.html" %}
+{% block title %}Browse Listings — StudentGig{% endblock %}
 
-<form method="get">
-  <select name="category">
-    <option value="">All Categories</option>
-    {% for cat in categories %}
-    <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-    {% endfor %}
-  </select>
-  <button type="submit">Filter</button>
-</form>
-{% for listing in listings %}
-<div>
-  <h2><a href="{% url 'listing_detail' listing.pk %}">{{ listing.title }}</a></h2>
-  <p>Category: {{ listing.category.name }} | Price: ${{ listing.price }} | {% if listing.is_remote %}Remote{% else %}In-person{% endif %}</p>
-  <p>{{ listing.description }}</p>
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Browse Services</h1>
+        <p>Find student talent across 8 categories</p>
+    </div>
+    {% if request.user.is_authenticated and request.user.userprofile.role == "student" %}
+        <a href="{% url 'listing_create' %}" class="btn btn-primary">+ Post a Service</a>
+    {% endif %}
 </div>
-{% empty %}
-<p>No listings found.</p>
-{% endfor %}
 
-{% if request.user.userprofile.role == "student" %}
-    <a href="{% url 'listing_create' %}">Post a Service</a>
-{% endif %}
+<div class="filter-bar">
+    <form method="get" style="display:flex;gap:.6rem;align-items:center;">
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if request.GET.category %}
+            <a href="{% url 'listing_list' %}" class="btn btn-secondary btn-sm">Clear</a>
+        {% endif %}
+    </form>
+</div>
 
-<a href="{% url 'dashboard' %}">Dashboard</a>
-
-
-
-<p>
-    <a href="{% url 'contracts' %}">My Contracts</a>
-</p>
-
-</body>
-</html>
+<div class="listings-grid">
+    {% for listing in listings %}
+    <div class="listing-card">
+        <h3><a href="{% url 'listing_detail' listing.pk %}">{{ listing.title }}</a></h3>
+        <div class="listing-card-meta">
+            <span>{{ listing.category.name }}</span>
+            <span>&middot;</span>
+            <span>{% if listing.is_remote %}Remote{% else %}In-person{% endif %}</span>
+            <span>&middot;</span>
+            <span>{{ listing.owner }}</span>
+        </div>
+        <p class="listing-card-desc">{{ listing.description }}</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.25rem;">
+            <span class="listing-price">${{ listing.price }}</span>
+            <a href="{% url 'listing_detail' listing.pk %}" class="btn btn-secondary btn-sm">View</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;">
+        <p class="empty-state">No listings found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

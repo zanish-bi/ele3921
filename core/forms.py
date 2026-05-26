@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Bid, ServiceListing
+from .models import Bid, ServiceListing, Review
 
 
 class BidForm(forms.ModelForm):
@@ -22,3 +22,9 @@ class UserRegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["username", "password"]
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["rating", "comment"]

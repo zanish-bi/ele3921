@@ -22,3 +22,6 @@ main.py
 
 # Environment variables
 .env
+
+# Local notes
+fixes.md

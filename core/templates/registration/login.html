@@ -1,17 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% block title %}Login — StudentGig{% endblock %}
 
-<h2>Login</h2>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
-
-</body>
-</html>
+{% block content %}
+<div style="display:flex;justify-content:center;padding-top:2rem;">
+    <div class="form-wrap">
+        <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:.4rem;">Sign in</h1>
+        <p style="font-size:.88rem;color:#5f6368;margin-bottom:1.5rem;">Welcome back to StudentGig</p>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-warning" style="margin-bottom:1rem;">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+            </div>
+        </form>
+        <p style="margin-top:1.2rem;font-size:.86rem;text-align:center;color:#5f6368;">
+            Don't have an account? <a href="{% url 'register' %}">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

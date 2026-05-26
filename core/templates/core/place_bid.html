@@ -1,36 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Place Bid</title>
-</head>
-<body>
-    {% if messages %}
-    {% for message in messages %}
-        <p style="color: green;">{{ message }}</p>
-    {% endfor %}
-{% endif %}
+{% extends "core/base.html" %}
+{% block title %}Place a Bid — StudentGig{% endblock %}
 
-<h1>Place a Bid</h1>
+{% block content %}
+<div style="margin-bottom:1rem;">
+    <a href="{% url 'listing_detail' listing.pk %}" style="font-size:.85rem;color:#5f6368;">&larr; Back to listing</a>
+</div>
 
-<p>Listing: {{ listing.title }}</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
 
-<form method="post">
-    {% csrf_token %}
+    <div class="card" style="background:#f8f9fa;border:1px solid #e8eaed;">
+        <div class="section-title">Service Details</div>
+        <div style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem;">{{ listing.title }}</div>
+        <div style="font-size:.85rem;color:#5f6368;margin-bottom:.75rem;">Listed at <strong style="color:#1a73e8;">${{ listing.price }}</strong></div>
+        <div style="font-size:.85rem;color:#3c4043;">{{ listing.description }}</div>
+    </div>
 
-    {{ form.non_field_errors }}
+    <div class="form-wrap" style="max-width:100%;">
+        <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.25rem;">Place a Bid</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Submit Bid</button>
+                <a href="{% url 'listing_detail' listing.pk %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-    {% for field in form %}
-        <p>
-            {{ field.label_tag }}<br>
-            {{ field }}
-            {{ field.errors }}
-        </p>
-    {% endfor %}
-
-    <button type="submit">Submit Bid</button>
-</form>
-
-<a href="{% url 'listing_detail' listing.pk %}">Back</a>
-
-</body>
-</html>
+</div>
+{% endblock %}

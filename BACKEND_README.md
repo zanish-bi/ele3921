@@ -86,7 +86,7 @@ Additional categories can be added at any time via the admin panel at `/admin/co
 | GET | `/listings/` | `listing_list` | Public |
 | GET | `/listings/create/` | `listing_create` | Login + student role + KYC |
 | GET | `/listings/<pk>/` | `listing_detail` | Public (owner also sees bids) |
-| GET/POST | `/listings/<pk>/bid/` | `bid_create` | Login + client role + KYC |
+| GET/POST | `/listings/<pk>/bid/` | `place_bid` | Login + client role + KYC |
 | POST | `/bids/<pk>/accept/` | `bid_accept` | Login + listing owner |
 | POST | `/bids/<pk>/reject/` | `bid_reject` | Login + listing owner |
 | GET | `/contracts/<pk>/` | `contract_detail` | Login + contract party |

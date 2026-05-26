@@ -1,27 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% block title %}Register — StudentGig{% endblock %}
 
-<h1>Register</h1>
-
-<form method="post">
-    {% csrf_token %}
-
-    {{ form.non_field_errors }}
-
-    {% for field in form %}
-        <p>
-            {{ field.label_tag }}<br>
-            {{ field }}
-            {{ field.errors }}
+{% block content %}
+<div style="display:flex;justify-content:center;padding-top:2rem;">
+    <div class="form-wrap">
+        <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:.4rem;">Create account</h1>
+        <p style="font-size:.88rem;color:#5f6368;margin-bottom:1.5rem;">Join StudentGig as a student or client</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="width:100%;">Register</button>
+            </div>
+        </form>
+        <p style="margin-top:1.2rem;font-size:.86rem;text-align:center;color:#5f6368;">
+            Already have an account? <a href="{% url 'login' %}">Login</a>
         </p>
-    {% endfor %}
-
-    <button type="submit">Register</button>
-</form>
-
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}

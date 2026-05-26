@@ -363,7 +363,7 @@ class BidCreateViewTests(TestCase):
         self.category = make_category()
         self.listing = make_listing(self.student, self.category)
         self.inactive = make_listing(self.student, self.category, title="Old Service", active=False)
-        self.url = reverse("bid_create", args=[self.listing.pk])
+        self.url = reverse("place_bid", args=[self.listing.pk])
 
     def test_requires_login(self):
         response = self.client.get(self.url)
@@ -387,7 +387,7 @@ class BidCreateViewTests(TestCase):
 
     def test_inactive_listing_returns_404(self):
         self.client.login(username="bob", password="pass")
-        response = self.client.get(reverse("bid_create", args=[self.inactive.pk]))
+        response = self.client.get(reverse("place_bid", args=[self.inactive.pk]))
         self.assertEqual(response.status_code, 404)
 
     def test_verified_client_submits_valid_bid(self):

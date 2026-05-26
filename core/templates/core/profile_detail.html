@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% block title %}{{ profile }} — StudentGig{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ profile.user.username }}</h1>
+        <p>{{ profile.get_role_display }}</p>
+    </div>
+    <div>
+        {% if profile.is_kyc_verified %}
+            <span class="badge badge-success">KYC Verified</span>
+        {% else %}
+            <span class="badge badge-warning">KYC Pending</span>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;align-items:start;">
+
+    <div class="card">
+        <div class="section-title">About</div>
+        {% if profile.bio %}
+            <p style="font-size:.9rem;color:#3c4043;white-space:pre-wrap;">{{ profile.bio }}</p>
+        {% else %}
+            <p class="empty-state">No bio provided.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if listings is not None %}
+        <div class="card" style="margin-bottom:1.25rem;">
+            <div class="section-title">Active Services</div>
+            {% if listings %}
+            <div class="listings-grid">
+                {% for listing in listings %}
+                <div class="listing-card">
+                    <h3><a href="{% url 'listing_detail' listing.pk %}">{{ listing.title }}</a></h3>
+                    <div class="listing-card-meta">
+                        <span>{{ listing.category.name }}</span>
+                        <span>&middot;</span>
+                        <span>{% if listing.is_remote %}Remote{% else %}In-person{% endif %}</span>
+                    </div>
+                    <p class="listing-card-desc">{{ listing.description }}</p>
+                    <span class="listing-price">${{ listing.price }}</span>
+                </div>
+                {% empty %}
+                <p class="empty-state">No active listings.</p>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-state">No active listings.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="section-title">Reviews Received ({{ reviews|length }})</div>
+            {% if reviews %}
+            {% for review in reviews %}
+            <div style="padding:.75rem 0;border-bottom:1px solid #f0f2f5;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
+                    <span style="font-weight:600;font-size:.9rem;">{{ review.reviewer }}</span>
+                    <span style="color:#f9a825;font-size:.95rem;">
+                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}
+                    </span>
+                </div>
+                {% if review.comment %}
+                <p style="font-size:.87rem;color:#3c4043;">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="empty-state">No reviews yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,55 +1,51 @@
-<body>
-{% if messages %}
-    {% for message in messages %}
-        <p style="color: green;">{{ message }}</p>
-    {% endfor %}
+{% extends "core/base.html" %}
+{% block title %}StudentGig — Student Freelance Marketplace{% endblock %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+
+<div class="card" style="margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+        <div>
+            <div style="font-size:.82rem;color:#5f6368;margin-bottom:.2rem;">Logged in as</div>
+            <div style="font-weight:600;font-size:1rem;">{{ request.user.username }} &mdash; <span style="color:#5f6368;font-weight:400;">{{ request.user.userprofile.get_role_display }}</span></div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            {% if request.user.userprofile.is_kyc_verified %}
+                <span class="badge badge-success">KYC Verified</span>
+            {% else %}
+                <span class="badge badge-warning">KYC Pending</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if not request.user.userprofile.is_kyc_verified %}
+<div class="alert alert-warning">
+    Your account is pending KYC verification. An admin will review and activate your account before you can post listings or place bids.
+</div>
 {% endif %}
 
-{% if request.user.is_authenticated %}
-    <p>
-        Logged in as: {{ request.user.username }} ({{ request.user.userprofile.role }})
-    </p>
-
-    <p>
-        KYC status:
-        {% if request.user.userprofile.is_kyc_verified %}
-            Verified
-        {% else %}
-            Pending
-        {% endif %}
-    </p>
-
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
-
-    <hr>
-
-    <h2>Navigation</h2>
-
-    <a href="{% url 'dashboard' %}">Dashboard</a><br>
-
+<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
+    <a href="{% url 'listing_list' %}" class="btn btn-primary">Browse Listings</a>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">My Dashboard</a>
+    <a href="{% url 'contracts' %}" class="btn btn-secondary">My Contracts</a>
     {% if request.user.userprofile.role == "student" %}
-    <a href="{% url 'listing_create' %}">Post a Service</a><br>
+        <a href="{% url 'listing_create' %}" class="btn btn-success">Post a Service</a>
     {% endif %}
-
-    {% if request.user.userprofile.role == "client" %}
-        <a href="{% url 'listing_list' %}">Browse Listings</a><br>
-    {% endif %}
+</div>
 
 {% else %}
 
-    <p>You are not logged in</p>
-
-    <a href="{% url 'login' %}">Login</a><br>
-    <a href="{% url 'register' %}">Register</a>
+<div class="hero">
+    <h1>StudentGig</h1>
+    <p>The marketplace where students offer services and clients get things done.</p>
+    <div class="hero-actions">
+        <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+        <a href="{% url 'listing_list' %}" class="btn btn-secondary">Browse Services</a>
+    </div>
+</div>
 
 {% endif %}
-
-<hr>
-
-<h1>Welcome to StudentGig</h1>
-<p>Simple marketplace for students</p>
-
-</body>
+{% endblock %}

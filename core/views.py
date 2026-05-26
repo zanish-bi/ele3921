@@ -4,8 +4,8 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib.auth import login
 from django.utils import timezone
-from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment
-from .forms import BidForm, ServiceListingForm, UserRegisterForm
+from .models import UserProfile, Category, ServiceListing, Bid, Contract, Payment, Review
+from .forms import BidForm, ServiceListingForm, UserRegisterForm, ReviewForm
 from django.contrib import messages
 from django.db.models import Q
 
@@ -196,6 +196,46 @@ def register(request):
         form = UserRegisterForm()
     
     return render(request, "registration/register.html", {"form": form})
+
+def profile_detail(request, user_pk):
+    profile = get_object_or_404(UserProfile, user__pk=user_pk)
+    listings = profile.listings.filter(is_active=True) if profile.role == "student" else None
+    reviews = profile.reviews_received.select_related("reviewer")
+    return render(request, "core/profile_detail.html", {
+        "profile": profile,
+        "listings": listings,
+        "reviews": reviews,
+    })
+
+
+@login_required
+def review_create(request, contract_pk):
+    contract = get_object_or_404(Contract, pk=contract_pk)
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    if contract.student != profile and contract.client != profile:
+        return HttpResponseForbidden("You are not a party to this contract.")
+    if contract.status != "completed":
+        return HttpResponseBadRequest("Contract is not completed yet.")
+    if Review.objects.filter(contract=contract, reviewer=profile).exists():
+        return HttpResponseBadRequest("You have already reviewed this contract.")
+
+    reviewee = contract.client if profile == contract.student else contract.student
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.contract = contract
+            review.reviewer = profile
+            review.reviewee = reviewee
+            review.save()
+            messages.success(request, "Review submitted.")
+            return redirect("contract_detail", pk=contract.pk)
+    else:
+        form = ReviewForm()
+    return render(request, "core/review_form.html", {"form": form, "contract": contract})
+
 
 @login_required
 def contracts(request):

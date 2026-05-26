@@ -1,49 +1,109 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
-{% if request.user.is_authenticated %}
-    <p>
-        Logged in as: {{ request.user.username }}
-        ({{ request.user.userprofile.get_role_display }})
-    </p>
+{% extends "core/base.html" %}
+{% block title %}Dashboard — StudentGig{% endblock %}
 
-    <p>
-        KYC status:
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{ request.user.username }}</p>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;">
         {% if request.user.userprofile.is_kyc_verified %}
-            ✅ Verified
+            <span class="badge badge-success">KYC Verified</span>
         {% else %}
-            ❌ Not verified
+            <span class="badge badge-warning">KYC Pending</span>
         {% endif %}
-    </p>
+        <span class="badge badge-info">{{ request.user.userprofile.get_role_display }}</span>
+    </div>
+</div>
 
-    {% if not request.user.userprofile.is_kyc_verified %}
-        <p><em>KYC pending — an admin will verify your account before you can transact.</em></p>
-    {% endif %}
-
-
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
-
-{% else %}
-    <p>Not logged in</p>
+{% if not request.user.userprofile.is_kyc_verified %}
+<div class="alert alert-warning">
+    Your account is pending KYC verification. An admin will review and approve your account before you can post listings or place bids.
+</div>
 {% endif %}
-<h1>Dashboard</h1>
 
-<h3>Navigation</h3>
+<div class="dash-grid">
 
-<ul>
-    <li><a href="{% url 'listing_list' %}">Browse Listings</a></li>
+    <div class="card">
+        <div class="section-title">Your Work (as Student)</div>
+        {% if student_contracts %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Contract</th>
+                    <th>Service</th>
+                    <th>Client</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract in student_contracts %}
+                <tr class="contract-row">
+                    <td><a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a></td>
+                    <td>{{ contract.bid.listing.title }}</td>
+                    <td>{{ contract.client }}</td>
+                    <td>
+                        {% if contract.status == "active" %}
+                            <span class="badge badge-info">Active</span>
+                        {% elif contract.status == "completed" %}
+                            <span class="badge badge-success">Completed</span>
+                        {% else %}
+                            <span class="badge badge-danger">{{ contract.status|capfirst }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No contracts as student.</p>
+        {% endif %}
+    </div>
 
+    <div class="card">
+        <div class="section-title">Your Hires (as Client)</div>
+        {% if client_contracts %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Contract</th>
+                    <th>Service</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract in client_contracts %}
+                <tr class="contract-row">
+                    <td><a href="{% url 'contract_detail' contract.pk %}">Contract #{{ contract.pk }}</a></td>
+                    <td>{{ contract.bid.listing.title }}</td>
+                    <td>{{ contract.student }}</td>
+                    <td>
+                        {% if contract.status == "active" %}
+                            <span class="badge badge-info">Active</span>
+                        {% elif contract.status == "completed" %}
+                            <span class="badge badge-success">Completed</span>
+                        {% else %}
+                            <span class="badge badge-danger">{{ contract.status|capfirst }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No contracts as client.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<div style="display:flex;gap:.75rem;margin-top:.5rem;">
+    <a href="{% url 'listing_list' %}" class="btn btn-secondary">Browse Listings</a>
     {% if request.user.userprofile.role == "student" %}
-        <li><a href="{% url 'listing_create' %}">Post a Service</a></li>
+        <a href="{% url 'listing_create' %}" class="btn btn-primary">Post a Service</a>
     {% endif %}
-
-</ul>
-
-</body>
-</html>
+    <a href="{% url 'contracts' %}" class="btn btn-secondary">All Contracts</a>
+</div>
+{% endblock %}

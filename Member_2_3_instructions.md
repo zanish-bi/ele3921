@@ -67,7 +67,7 @@ All templates live in `core/templates/core/`. The six files you need to style ar
 
 **What to build:**
 - Full listing details
-- A "Place a Bid" link to `{% url 'bid_create' listing.pk %}` — show only if `listing.is_active and user.is_authenticated and request.user.userprofile.role == "client"`
+- A "Place a Bid" link to `{% url 'place_bid' listing.pk %}` — show only if `listing.is_active and user.is_authenticated and request.user.userprofile.role == "client"`
 - If `bids is not None`: show the bids table with Accept/Reject buttons (POST forms to `{% url 'bid_accept' bid.pk %}` and `{% url 'bid_reject' bid.pk %}`)
   - Only show Accept/Reject buttons for bids where `bid.status == "pending"`
 
