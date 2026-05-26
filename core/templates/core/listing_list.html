@@ -1,10 +1,10 @@
 {% extends "core/base.html" %}
-{% block title %}Browse Listings — StudentGig{% endblock %}
+{% block title %}Student Gigs — StudentGig{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div>
-        <h1>Browse Services</h1>
+        <h1>Student Gigs</h1>
         <p>Find student talent across 8 categories</p>
     </div>
     {% if request.user.is_authenticated and request.user.userprofile.role == "student" %}
