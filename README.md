@@ -34,7 +34,7 @@ pwsh start.ps1
 ```
 
 On first run the script will:
-1. Open the folder where you saved the file 
+1. After cloning, open the project folder in VS Code and navigate into the project directory: 
 2. Apply all database migrations (creates `db.sqlite3`)
 3. Seed the database with test users, listings, contracts, and reviews
 4. Start the development server at **http://127.0.0.1:8000**
@@ -42,7 +42,8 @@ On first run the script will:
 ### Manual setup (pip fallback — no uv)
 
 ```bash
-Open the folder where the file was saved when u cloned it
+After cloning, open the project folder in VS Code and navigate into the project directory:
+cd ele3921/studentgig
 
 pip install -r requirements.txt
 python manage.py migrate
