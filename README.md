@@ -23,6 +23,8 @@ A student freelance marketplace where students offer services and clients hire t
 git clone https://github.com/zanish-bi/ele3921.git
 cd ele3921/studentgig
 
+After cloning, open the project folder in VS Code and navigate into the project directory:
+
 # Linux / macOS
 ./start.sh
 
@@ -34,16 +36,13 @@ pwsh start.ps1
 ```
 
 On first run the script will:
-1. After cloning, open the project folder in VS Code and navigate into the project directory: 
-2. Apply all database migrations (creates `db.sqlite3`)
-3. Seed the database with test users, listings, contracts, and reviews
-4. Start the development server at **http://127.0.0.1:8000**
+1. Apply all database migrations (creates `db.sqlite3`)
+2. Seed the database with test users, listings, contracts, and reviews
+3. Start the development server at **http://127.0.0.1:8000**
 
 ### Manual setup (pip fallback — no uv)
 
 ```bash
-After cloning, open the project folder in VS Code and navigate into the project directory:
-cd ele3921/studentgig
 
 pip install -r requirements.txt
 python manage.py migrate
