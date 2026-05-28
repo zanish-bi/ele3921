@@ -27,14 +27,14 @@ cd ele3921/studentgig
 ./start.sh
 
 # Windows (Command Prompt)
-start.bat
+./start.bat
 
 # Windows (PowerShell) or cross-platform
 pwsh start.ps1
 ```
 
 On first run the script will:
-1. Install all Python dependencies into a local `.venv`
+1. Open the folder where you saved the file 
 2. Apply all database migrations (creates `db.sqlite3`)
 3. Seed the database with test users, listings, contracts, and reviews
 4. Start the development server at **http://127.0.0.1:8000**
@@ -42,13 +42,7 @@ On first run the script will:
 ### Manual setup (pip fallback — no uv)
 
 ```bash
-python -m venv .venv
-
-# Linux / macOS
-source .venv/bin/activate
-
-# Windows
-.venv\Scripts\activate
+Open the folder where the file was saved when u cloned it
 
 pip install -r requirements.txt
 python manage.py migrate
@@ -466,6 +460,6 @@ studentgig/
 | Member | Responsibility | Status |
 |---|---|---|
 | Zanish | Backend + Frontend — models, views, admin, migrations, templates, tests | Complete |
-| Danjal | Project planning, requirements, and documentation | Complete |
+| Danjal | Testing, debugging, permissions, navigation flow, contracts flow, GitHub coordination, documentation, and system logic adjustments | Complete |
 
 See `BACKEND_README.md` for the full backend reference.
