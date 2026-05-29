@@ -33,7 +33,7 @@ class ReviewForm(forms.ModelForm):
 class JobRequestForm(forms.ModelForm):
     class Meta:
         model = JobRequest
-        fields = ["category", "title", "description", "budget"]
+        fields = ["category", "title", "description", "budget", "is_remote"]
 
 
 class JobBidForm(forms.ModelForm):

@@ -259,6 +259,10 @@ def job_request_list(request):
         except ValueError:
             pass
 
+    remote = request.GET.get("remote")
+    if remote in ("true", "false"):
+        jobs = jobs.filter(is_remote=(remote == "true"))
+
     sort = request.GET.get("sort", "newest")
     if sort == "budget_asc":
         jobs = jobs.order_by("budget")

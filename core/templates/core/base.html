@@ -379,7 +379,7 @@
                 {% endif %}
             </a>
             <span class="navbar-sep">|</span>
-            <span class="navbar-user">{{ request.user.username }}</span>
+            <a href="{% url 'profile_detail' request.user.pk %}" class="navbar-user">{{ request.user.username }}</a>
             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn-nav-logout">Logout</button>

@@ -58,6 +58,30 @@ TEST_LISTINGS = [
         "price": "30.00",
         "is_remote": True,
     },
+    {
+        "owner": "student1",
+        "category": "Tutoring",
+        "title": "Mathematics & Statistics Tutoring",
+        "description": (
+            "One-on-one tutoring for university-level maths, statistics, and probability. "
+            "Calculus, linear algebra, hypothesis testing — I cover it all. "
+            "Sessions in person on campus only."
+        ),
+        "price": "40.00",
+        "is_remote": False,
+    },
+    {
+        "owner": "student1",
+        "category": "Video & Animation",
+        "title": "YouTube Video Editing",
+        "description": (
+            "Professional video editing for YouTube creators. "
+            "Colour grading, transitions, captions, and thumbnail design included. "
+            "Turnaround: 48 hours per 10-minute video."
+        ),
+        "price": "85.00",
+        "is_remote": True,
+    },
 ]
 
 
@@ -206,24 +230,25 @@ class Command(BaseCommand):
         )
 
     def _seed_job_request(self):
-        """One open job request from client1 so the Jobs page is not empty on first load."""
-        self.stdout.write("Seeding job request...")
+        """Two open job requests from client1 — one remote, one in-person."""
+        self.stdout.write("Seeding job requests...")
         try:
             client = User.objects.get(username="client1").userprofile
         except User.DoesNotExist:
             self.stdout.write(self.style.WARNING("  client1 not found, skipping"))
             return
 
-        cat = Category.objects.filter(name="Programming").first()
-        if not cat:
-            self.stdout.write(self.style.WARNING("  'Programming' category not found, skipping"))
+        cat_prog = Category.objects.filter(name="Programming").first()
+        cat_tut = Category.objects.filter(name="Tutoring").first()
+        if not cat_prog or not cat_tut:
+            self.stdout.write(self.style.WARNING("  Required categories not found, skipping"))
             return
 
-        job, created = JobRequest.objects.get_or_create(
+        job1, c1 = JobRequest.objects.get_or_create(
             client=client,
             title="Need a Python Script for Data Processing",
             defaults={
-                "category": cat,
+                "category": cat_prog,
                 "description": (
                     "I have a CSV file with ~10,000 rows of sales data. "
                     "I need a Python script that cleans the data, removes duplicates, "
@@ -232,11 +257,29 @@ class Command(BaseCommand):
                     "Deadline: one week. Please bid if you have pandas/numpy experience."
                 ),
                 "budget": "60.00",
+                "is_remote": True,
                 "is_active": True,
             },
         )
-        tag = "created" if created else "already exists"
-        self.stdout.write(f"  '{job.title}' — {tag}")
+        self.stdout.write(f"  '{job1.title}' (remote) — {'created' if c1 else 'already exists'}")
+
+        job2, c2 = JobRequest.objects.get_or_create(
+            client=client,
+            title="In-Person Maths Tutor Needed",
+            defaults={
+                "category": cat_tut,
+                "description": (
+                    "Looking for a maths tutor for weekly 1-hour sessions on campus. "
+                    "Topics: calculus, linear algebra, and basic statistics for a first-year course. "
+                    "Flexible scheduling — evenings or weekends preferred. "
+                    "Must be available in person."
+                ),
+                "budget": "35.00",
+                "is_remote": False,
+                "is_active": True,
+            },
+        )
+        self.stdout.write(f"  '{job2.title}' (in-person) — {'created' if c2 else 'already exists'}")
 
     def _print_summary(self):
         self.stdout.write("")
@@ -252,5 +295,6 @@ class Command(BaseCommand):
         self.stdout.write("  Available listing for bidding:")
         self.stdout.write("  'Academic Essay Editing' by student2 — log in as client1 to bid")
         self.stdout.write("")
-        self.stdout.write("  Available job request for bidding:")
-        self.stdout.write("  'Need a Python Script for Data Processing' by client1 — log in as student1 to bid")
+        self.stdout.write("  Available job requests for bidding (log in as student1):")
+        self.stdout.write("  'Need a Python Script for Data Processing' by client1 (remote)")
+        self.stdout.write("  'In-Person Maths Tutor Needed' by client1 (in-person)")

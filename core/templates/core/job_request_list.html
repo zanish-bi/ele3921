@@ -23,13 +23,18 @@
         <input type="number" name="budget_max" placeholder="Max budget $" min="0" step="0.01"
                value="{{ request.GET.budget_max }}"
                style="width:110px;padding:.42rem .6rem;border:1px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--card-bg);">
+        <select name="remote">
+            <option value="">Remote / In-person</option>
+            <option value="true" {% if request.GET.remote == "true" %}selected{% endif %}>Remote only</option>
+            <option value="false" {% if request.GET.remote == "false" %}selected{% endif %}>In-person only</option>
+        </select>
         <select name="sort">
             <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
             <option value="budget_asc" {% if sort == "budget_asc" %}selected{% endif %}>Budget: Low → High</option>
             <option value="budget_desc" {% if sort == "budget_desc" %}selected{% endif %}>Budget: High → Low</option>
         </select>
         <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-        {% if request.GET.category or request.GET.budget_max %}
+        {% if request.GET.category or request.GET.budget_max or request.GET.remote %}
             <a href="{% url 'job_request_list' %}" class="btn btn-secondary btn-sm">Clear</a>
         {% endif %}
     </form>
@@ -42,7 +47,9 @@
         <div class="listing-card-meta">
             <span>{{ job.category.name }}</span>
             <span>&middot;</span>
-            <span>Posted by {{ job.client }}</span>
+            <span>{% if job.is_remote %}Remote{% else %}In-person{% endif %}</span>
+            <span>&middot;</span>
+            <span>{{ job.client }}</span>
             <span>&middot;</span>
             <span>{{ job.created_at|date:"N j, Y" }}</span>
         </div>

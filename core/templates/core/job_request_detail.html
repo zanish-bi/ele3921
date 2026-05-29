@@ -9,7 +9,7 @@
 <div class="page-header">
     <div>
         <h1>{{ job.title }}</h1>
-        <p>{{ job.category.name }} &middot; Posted by {{ job.client }} &middot; {{ job.created_at|date:"N j, Y" }}</p>
+        <p>{{ job.category.name }} &middot; {% if job.is_remote %}Remote{% else %}In-person{% endif %} &middot; {{ job.client }} &middot; {{ job.created_at|date:"N j, Y" }}</p>
     </div>
     <div>
         {% if job.is_active %}
@@ -120,6 +120,14 @@
             <div class="section-title">Budget</div>
             <div style="font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--navy);">${{ job.budget }}</div>
             <div style="font-size:.8rem;color:var(--muted);margin-top:.3rem;">Client's maximum budget</div>
+        </div>
+        <div class="card">
+            <div class="section-title">Format</div>
+            {% if job.is_remote %}
+                <span class="badge badge-success">Remote</span>
+            {% else %}
+                <span class="badge badge-info">In-person</span>
+            {% endif %}
         </div>
         <div class="card">
             <div class="section-title">Client</div>
