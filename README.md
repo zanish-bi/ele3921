@@ -21,18 +21,20 @@ A student freelance marketplace where students offer services and clients hire t
 ```bash
 # Clone the repo
 git clone https://github.com/zanish-bi/ele3921.git
-cd ele3921/studentgig
+cd ele3921
+```
 
-After cloning, open the project folder in VS Code and navigate into the project directory:
+After cloning, open the project folder and navigate into it, then run the launcher for your platform:
 
+```bash
 # Linux / macOS
 ./start.sh
 
 # Windows (Command Prompt)
-./start.bat
+start.bat
 
-# Windows (PowerShell) or cross-platform
-pwsh start.ps1
+# Windows (PowerShell)
+.\start.ps1
 ```
 
 On first run the script will:
@@ -43,7 +45,6 @@ On first run the script will:
 ### Manual setup (pip fallback — no uv)
 
 ```bash
-
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed

@@ -389,10 +389,10 @@ class ListingCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<form")
 
-    def test_unverified_student_is_forbidden(self):
+    def test_unverified_student_redirects_to_dashboard(self):
         self.client.login(username="dave", password="pass")
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("dashboard"))
 
     def test_client_is_forbidden(self):
         self.client.login(username="bob", password="pass")
@@ -495,10 +495,10 @@ class BidCreateViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
 
-    def test_unverified_client_is_forbidden(self):
+    def test_unverified_client_redirects_to_listing(self):
         self.client.login(username="charlie", password="pass")
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("listing_detail", args=[self.listing.pk]))
 
     def test_verified_client_sees_form(self):
         self.client.login(username="bob", password="pass")
@@ -1155,10 +1155,10 @@ class JobRequestCreateViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
 
-    def test_unverified_client_is_forbidden(self):
+    def test_unverified_client_redirects_to_dashboard(self):
         self.client.login(username="charlie", password="pass")
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("dashboard"))
 
     def test_verified_client_sees_form(self):
         self.client.login(username="bob", password="pass")
@@ -1239,10 +1239,10 @@ class JobBidCreateViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
 
-    def test_unverified_student_is_forbidden(self):
+    def test_unverified_student_redirects_to_job_detail(self):
         self.client.login(username="dave", password="pass")
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("job_request_detail", args=[self.job.pk]))
 
     def test_valid_bid_submitted_successfully(self):
         self.client.login(username="alice", password="pass")
@@ -2220,26 +2220,26 @@ class WorkflowRoleGuards(TestCase):
         resp = self.client.get(reverse("job_bid_create", args=[self.job.pk]))
         self.assertEqual(resp.status_code, 403)
 
-    # Unverified users cannot transact
+    # Unverified users are redirected with an error message, not given a bare 403
     def test_unverified_student_cannot_post_listing(self):
         self.client.login(username="rg_unverified_s", password="pass")
         resp = self.client.get(reverse("listing_create"))
-        self.assertEqual(resp.status_code, 403)
+        self.assertRedirects(resp, reverse("dashboard"))
 
     def test_unverified_student_cannot_bid_on_job(self):
         self.client.login(username="rg_unverified_s", password="pass")
         resp = self.client.get(reverse("job_bid_create", args=[self.job.pk]))
-        self.assertEqual(resp.status_code, 403)
+        self.assertRedirects(resp, reverse("job_request_detail", args=[self.job.pk]))
 
     def test_unverified_client_cannot_bid_on_listing(self):
         self.client.login(username="rg_unverified_c", password="pass")
         resp = self.client.get(reverse("place_bid", args=[self.listing.pk]))
-        self.assertEqual(resp.status_code, 403)
+        self.assertRedirects(resp, reverse("listing_detail", args=[self.listing.pk]))
 
     def test_unverified_client_cannot_post_job_request(self):
         self.client.login(username="rg_unverified_c", password="pass")
         resp = self.client.get(reverse("job_request_create"))
-        self.assertEqual(resp.status_code, 403)
+        self.assertRedirects(resp, reverse("dashboard"))
 
     # Only the listing owner (student) can accept/reject service bids
     def test_client_cannot_accept_their_own_bid(self):

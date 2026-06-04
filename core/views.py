@@ -102,7 +102,8 @@ def listing_create(request):
     if profile.role != "student":
         return HttpResponseForbidden("Only students can create listings.")
     if not profile.is_kyc_verified:
-        return HttpResponseForbidden("KYC verification required to create listings.")
+        messages.error(request, "KYC verification is required to post a service. Use the 'Simulate KYC Verification' button on your dashboard.")
+        return redirect("dashboard")
     if request.method == "POST":
         form = ServiceListingForm(request.POST)
         if form.is_valid():
@@ -142,7 +143,8 @@ def place_bid(request, pk):
     if profile.role != "client":
         return HttpResponseForbidden("Only clients can place bids.")
     if not profile.is_kyc_verified:
-        return HttpResponseForbidden("KYC verification required.")
+        messages.error(request, "KYC verification is required to place a bid. Use the 'Simulate KYC Verification' button on your dashboard.")
+        return redirect("listing_detail", pk=listing.pk)
     if Bid.objects.filter(listing=listing, client=profile, status="pending").exists():
         messages.error(request, "You already have a pending bid on this listing.")
         return redirect("listing_detail", pk=listing.pk)
@@ -282,7 +284,8 @@ def job_request_create(request):
     if profile.role != "client":
         return HttpResponseForbidden("Only clients can post job requests.")
     if not profile.is_kyc_verified:
-        return HttpResponseForbidden("KYC verification required.")
+        messages.error(request, "KYC verification is required to post a job request. Use the 'Simulate KYC Verification' button on your dashboard.")
+        return redirect("dashboard")
     if request.method == "POST":
         form = JobRequestForm(request.POST)
         if form.is_valid():
@@ -325,7 +328,8 @@ def job_bid_create(request, pk):
     if profile.role != "student":
         return HttpResponseForbidden("Only students can bid on job requests.")
     if not profile.is_kyc_verified:
-        return HttpResponseForbidden("KYC verification required.")
+        messages.error(request, "KYC verification is required to bid on jobs. Use the 'Simulate KYC Verification' button on your dashboard.")
+        return redirect("job_request_detail", pk=job.pk)
     if JobBid.objects.filter(job_request=job, student=profile).exists():
         messages.error(request, "You already have a bid on this job request.")
         return redirect("job_request_detail", pk=job.pk)

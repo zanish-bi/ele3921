@@ -1,0 +1,1110 @@
+﻿[
+{
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+        "name": "Can add log entry",
+        "content_type": 1,
+        "codename": "add_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+        "name": "Can change log entry",
+        "content_type": 1,
+        "codename": "change_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+        "name": "Can delete log entry",
+        "content_type": 1,
+        "codename": "delete_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+        "name": "Can view log entry",
+        "content_type": 1,
+        "codename": "view_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 5,
+    "fields": {
+        "name": "Can add permission",
+        "content_type": 3,
+        "codename": "add_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 6,
+    "fields": {
+        "name": "Can change permission",
+        "content_type": 3,
+        "codename": "change_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 7,
+    "fields": {
+        "name": "Can delete permission",
+        "content_type": 3,
+        "codename": "delete_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 8,
+    "fields": {
+        "name": "Can view permission",
+        "content_type": 3,
+        "codename": "view_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 9,
+    "fields": {
+        "name": "Can add group",
+        "content_type": 2,
+        "codename": "add_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+        "name": "Can change group",
+        "content_type": 2,
+        "codename": "change_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+        "name": "Can delete group",
+        "content_type": 2,
+        "codename": "delete_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 12,
+    "fields": {
+        "name": "Can view group",
+        "content_type": 2,
+        "codename": "view_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 13,
+    "fields": {
+        "name": "Can add user",
+        "content_type": 4,
+        "codename": "add_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 14,
+    "fields": {
+        "name": "Can change user",
+        "content_type": 4,
+        "codename": "change_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 15,
+    "fields": {
+        "name": "Can delete user",
+        "content_type": 4,
+        "codename": "delete_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 16,
+    "fields": {
+        "name": "Can view user",
+        "content_type": 4,
+        "codename": "view_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 17,
+    "fields": {
+        "name": "Can add content type",
+        "content_type": 5,
+        "codename": "add_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 18,
+    "fields": {
+        "name": "Can change content type",
+        "content_type": 5,
+        "codename": "change_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 19,
+    "fields": {
+        "name": "Can delete content type",
+        "content_type": 5,
+        "codename": "delete_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 20,
+    "fields": {
+        "name": "Can view content type",
+        "content_type": 5,
+        "codename": "view_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 21,
+    "fields": {
+        "name": "Can add session",
+        "content_type": 6,
+        "codename": "add_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 22,
+    "fields": {
+        "name": "Can change session",
+        "content_type": 6,
+        "codename": "change_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 23,
+    "fields": {
+        "name": "Can delete session",
+        "content_type": 6,
+        "codename": "delete_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 24,
+    "fields": {
+        "name": "Can view session",
+        "content_type": 6,
+        "codename": "view_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 25,
+    "fields": {
+        "name": "Can add bid",
+        "content_type": 7,
+        "codename": "add_bid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 26,
+    "fields": {
+        "name": "Can change bid",
+        "content_type": 7,
+        "codename": "change_bid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 27,
+    "fields": {
+        "name": "Can delete bid",
+        "content_type": 7,
+        "codename": "delete_bid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 28,
+    "fields": {
+        "name": "Can view bid",
+        "content_type": 7,
+        "codename": "view_bid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 29,
+    "fields": {
+        "name": "Can add category",
+        "content_type": 8,
+        "codename": "add_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 30,
+    "fields": {
+        "name": "Can change category",
+        "content_type": 8,
+        "codename": "change_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 31,
+    "fields": {
+        "name": "Can delete category",
+        "content_type": 8,
+        "codename": "delete_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 32,
+    "fields": {
+        "name": "Can view category",
+        "content_type": 8,
+        "codename": "view_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 33,
+    "fields": {
+        "name": "Can add contract",
+        "content_type": 9,
+        "codename": "add_contract"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 34,
+    "fields": {
+        "name": "Can change contract",
+        "content_type": 9,
+        "codename": "change_contract"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 35,
+    "fields": {
+        "name": "Can delete contract",
+        "content_type": 9,
+        "codename": "delete_contract"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 36,
+    "fields": {
+        "name": "Can view contract",
+        "content_type": 9,
+        "codename": "view_contract"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 37,
+    "fields": {
+        "name": "Can add payment",
+        "content_type": 14,
+        "codename": "add_payment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 38,
+    "fields": {
+        "name": "Can change payment",
+        "content_type": 14,
+        "codename": "change_payment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 39,
+    "fields": {
+        "name": "Can delete payment",
+        "content_type": 14,
+        "codename": "delete_payment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 40,
+    "fields": {
+        "name": "Can view payment",
+        "content_type": 14,
+        "codename": "view_payment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 41,
+    "fields": {
+        "name": "Can add service listing",
+        "content_type": 16,
+        "codename": "add_servicelisting"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 42,
+    "fields": {
+        "name": "Can change service listing",
+        "content_type": 16,
+        "codename": "change_servicelisting"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 43,
+    "fields": {
+        "name": "Can delete service listing",
+        "content_type": 16,
+        "codename": "delete_servicelisting"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 44,
+    "fields": {
+        "name": "Can view service listing",
+        "content_type": 16,
+        "codename": "view_servicelisting"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 45,
+    "fields": {
+        "name": "Can add user profile",
+        "content_type": 17,
+        "codename": "add_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 46,
+    "fields": {
+        "name": "Can change user profile",
+        "content_type": 17,
+        "codename": "change_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 47,
+    "fields": {
+        "name": "Can delete user profile",
+        "content_type": 17,
+        "codename": "delete_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 48,
+    "fields": {
+        "name": "Can view user profile",
+        "content_type": 17,
+        "codename": "view_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 49,
+    "fields": {
+        "name": "Can add review",
+        "content_type": 15,
+        "codename": "add_review"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 50,
+    "fields": {
+        "name": "Can change review",
+        "content_type": 15,
+        "codename": "change_review"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 51,
+    "fields": {
+        "name": "Can delete review",
+        "content_type": 15,
+        "codename": "delete_review"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 52,
+    "fields": {
+        "name": "Can view review",
+        "content_type": 15,
+        "codename": "view_review"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 53,
+    "fields": {
+        "name": "Can add contract message",
+        "content_type": 10,
+        "codename": "add_contractmessage"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 54,
+    "fields": {
+        "name": "Can change contract message",
+        "content_type": 10,
+        "codename": "change_contractmessage"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 55,
+    "fields": {
+        "name": "Can delete contract message",
+        "content_type": 10,
+        "codename": "delete_contractmessage"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 56,
+    "fields": {
+        "name": "Can view contract message",
+        "content_type": 10,
+        "codename": "view_contractmessage"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 57,
+    "fields": {
+        "name": "Can add job bid",
+        "content_type": 11,
+        "codename": "add_jobbid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 58,
+    "fields": {
+        "name": "Can change job bid",
+        "content_type": 11,
+        "codename": "change_jobbid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 59,
+    "fields": {
+        "name": "Can delete job bid",
+        "content_type": 11,
+        "codename": "delete_jobbid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 60,
+    "fields": {
+        "name": "Can view job bid",
+        "content_type": 11,
+        "codename": "view_jobbid"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 61,
+    "fields": {
+        "name": "Can add job request",
+        "content_type": 12,
+        "codename": "add_jobrequest"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 62,
+    "fields": {
+        "name": "Can change job request",
+        "content_type": 12,
+        "codename": "change_jobrequest"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 63,
+    "fields": {
+        "name": "Can delete job request",
+        "content_type": 12,
+        "codename": "delete_jobrequest"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 64,
+    "fields": {
+        "name": "Can view job request",
+        "content_type": 12,
+        "codename": "view_jobrequest"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 65,
+    "fields": {
+        "name": "Can add notification",
+        "content_type": 13,
+        "codename": "add_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 66,
+    "fields": {
+        "name": "Can change notification",
+        "content_type": 13,
+        "codename": "change_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 67,
+    "fields": {
+        "name": "Can delete notification",
+        "content_type": 13,
+        "codename": "delete_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 68,
+    "fields": {
+        "name": "Can view notification",
+        "content_type": 13,
+        "codename": "view_notification"
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$7jpYrmSd0QHhvJEvEX0OR7$vy9aw8i1NUu0u5jPn2sSm1+M8ZhexjmyS2q1bU/p7Js=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student1",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-06-04T11:09:55.743Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$YjzGmWT6Dw7mJYjjNB7DRG$sMAz/loWWHNHHeTWmL4/m33tvL3bl2D9JKSobNRC604=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student2",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-06-04T11:09:56.579Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$FFov1bJuafuzwMj81MBoNj$9v9lSi82ySl8RZmLD7rMSaSvTZ82u9JICxrPStC4H48=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "client1",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-06-04T11:09:57.570Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$KiuVVxH11QMH13gScgqNK0$0A8fGfZ1zuosWB6ZNu3u9tMg2zGNShoSV5y/IF2n2d0=",
+        "last_login": null,
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "admin@studentgig.local",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-06-04T11:09:58.376Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 1,
+    "fields": {
+        "app_label": "admin",
+        "model": "logentry"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 2,
+    "fields": {
+        "app_label": "auth",
+        "model": "group"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 3,
+    "fields": {
+        "app_label": "auth",
+        "model": "permission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 4,
+    "fields": {
+        "app_label": "auth",
+        "model": "user"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 5,
+    "fields": {
+        "app_label": "contenttypes",
+        "model": "contenttype"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 6,
+    "fields": {
+        "app_label": "sessions",
+        "model": "session"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 7,
+    "fields": {
+        "app_label": "core",
+        "model": "bid"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 8,
+    "fields": {
+        "app_label": "core",
+        "model": "category"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 9,
+    "fields": {
+        "app_label": "core",
+        "model": "contract"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 10,
+    "fields": {
+        "app_label": "core",
+        "model": "contractmessage"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 11,
+    "fields": {
+        "app_label": "core",
+        "model": "jobbid"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 12,
+    "fields": {
+        "app_label": "core",
+        "model": "jobrequest"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 13,
+    "fields": {
+        "app_label": "core",
+        "model": "notification"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 14,
+    "fields": {
+        "app_label": "core",
+        "model": "payment"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 15,
+    "fields": {
+        "app_label": "core",
+        "model": "review"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 16,
+    "fields": {
+        "app_label": "core",
+        "model": "servicelisting"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 17,
+    "fields": {
+        "app_label": "core",
+        "model": "userprofile"
+    }
+},
+{
+    "model": "core.userprofile",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "role": "student",
+        "bio": "Computer Science student specialising in web development, Python, and graphic design. 3 years freelancing experience.",
+        "is_kyc_verified": true
+    }
+},
+{
+    "model": "core.userprofile",
+    "pk": 2,
+    "fields": {
+        "user": 2,
+        "role": "student",
+        "bio": "Linguistics major offering essay editing and translation services. Native English speaker.",
+        "is_kyc_verified": false
+    }
+},
+{
+    "model": "core.userprofile",
+    "pk": 3,
+    "fields": {
+        "user": 3,
+        "role": "client",
+        "bio": "Startup founder looking for talented student freelancers for short-term projects.",
+        "is_kyc_verified": true
+    }
+},
+{
+    "model": "core.userprofile",
+    "pk": 4,
+    "fields": {
+        "user": 4,
+        "role": "",
+        "bio": "",
+        "is_kyc_verified": false
+    }
+},
+{
+    "model": "core.category",
+    "pk": 1,
+    "fields": {
+        "name": "Design",
+        "description": "Graphic design, UI/UX, branding, and visual assets"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 2,
+    "fields": {
+        "name": "Programming",
+        "description": "Web development, apps, scripts, and software"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 3,
+    "fields": {
+        "name": "Tutoring",
+        "description": "Academic subjects, test prep, and skill coaching"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 4,
+    "fields": {
+        "name": "Writing",
+        "description": "Essays, copywriting, technical writing, and editing"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 5,
+    "fields": {
+        "name": "Video & Animation",
+        "description": "Video editing, motion graphics, and animation"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 6,
+    "fields": {
+        "name": "Translation",
+        "description": "Document translation and multilingual content"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 7,
+    "fields": {
+        "name": "Marketing",
+        "description": "Social media, SEO, and digital marketing"
+    }
+},
+{
+    "model": "core.category",
+    "pk": 8,
+    "fields": {
+        "name": "Data & Research",
+        "description": "Data analysis, surveys, and research assistance"
+    }
+},
+{
+    "model": "core.servicelisting",
+    "pk": 1,
+    "fields": {
+        "owner": 1,
+        "category": 2,
+        "title": "Python & Django Web Development",
+        "description": "I will build you a clean, tested Django web application with modern templates, user authentication, and database integration. Includes deployment instructions. Portfolio available on request.",
+        "price": "120.00",
+        "is_remote": true,
+        "is_active": false,
+        "created_at": "2026-06-04T11:09:59.315Z"
+    }
+},
+{
+    "model": "core.servicelisting",
+    "pk": 2,
+    "fields": {
+        "owner": 1,
+        "category": 1,
+        "title": "Logo & Brand Identity Design",
+        "description": "Professional logo design with unlimited revisions until you are happy. Deliverables: SVG, PNG (multiple sizes), and PDF. Turnaround 3–5 business days.",
+        "price": "75.00",
+        "is_remote": true,
+        "is_active": false,
+        "created_at": "2026-06-04T11:09:59.329Z"
+    }
+},
+{
+    "model": "core.servicelisting",
+    "pk": 3,
+    "fields": {
+        "owner": 2,
+        "category": 4,
+        "title": "Academic Essay Editing",
+        "description": "Native-level English editing for essays, reports, and dissertations. I improve grammar, structure, and flow while keeping your voice. Max 5,000 words per order.",
+        "price": "30.00",
+        "is_remote": true,
+        "is_active": true,
+        "created_at": "2026-06-04T11:09:59.343Z"
+    }
+},
+{
+    "model": "core.servicelisting",
+    "pk": 4,
+    "fields": {
+        "owner": 1,
+        "category": 3,
+        "title": "Mathematics & Statistics Tutoring",
+        "description": "One-on-one tutoring for university-level maths, statistics, and probability. Calculus, linear algebra, hypothesis testing — I cover it all. Sessions in person on campus only.",
+        "price": "40.00",
+        "is_remote": false,
+        "is_active": true,
+        "created_at": "2026-06-04T11:09:59.356Z"
+    }
+},
+{
+    "model": "core.servicelisting",
+    "pk": 5,
+    "fields": {
+        "owner": 1,
+        "category": 5,
+        "title": "YouTube Video Editing",
+        "description": "Professional video editing for YouTube creators. Colour grading, transitions, captions, and thumbnail design included. Turnaround: 48 hours per 10-minute video.",
+        "price": "85.00",
+        "is_remote": true,
+        "is_active": true,
+        "created_at": "2026-06-04T11:09:59.365Z"
+    }
+},
+{
+    "model": "core.bid",
+    "pk": 1,
+    "fields": {
+        "listing": 1,
+        "client": 3,
+        "proposed_price": "110.00",
+        "message": "Hi! I need a task management app — login, add/complete/delete tasks, simple dashboard. Django preferred. Happy to discuss requirements.",
+        "status": "accepted",
+        "created_at": "2026-06-04T11:09:59.376Z"
+    }
+},
+{
+    "model": "core.bid",
+    "pk": 2,
+    "fields": {
+        "listing": 2,
+        "client": 3,
+        "proposed_price": "70.00",
+        "message": "Need a logo for my startup. Clean, modern look. Prefer SVG + PNG deliverables.",
+        "status": "accepted",
+        "created_at": "2026-06-04T11:09:59.400Z"
+    }
+},
+{
+    "model": "core.jobrequest",
+    "pk": 1,
+    "fields": {
+        "client": 3,
+        "category": 2,
+        "title": "Need a Python Script for Data Processing",
+        "description": "I have a CSV file with ~10,000 rows of sales data. I need a Python script that cleans the data, removes duplicates, and generates a summary report (totals by month, top products). Output should be a new CSV plus a simple text summary. Deadline: one week. Please bid if you have pandas/numpy experience.",
+        "budget": "60.00",
+        "is_remote": true,
+        "is_active": true,
+        "created_at": "2026-06-04T11:09:59.429Z"
+    }
+},
+{
+    "model": "core.jobrequest",
+    "pk": 2,
+    "fields": {
+        "client": 3,
+        "category": 3,
+        "title": "In-Person Maths Tutor Needed",
+        "description": "Looking for a maths tutor for weekly 1-hour sessions on campus. Topics: calculus, linear algebra, and basic statistics for a first-year course. Flexible scheduling — evenings or weekends preferred. Must be available in person.",
+        "budget": "35.00",
+        "is_remote": false,
+        "is_active": true,
+        "created_at": "2026-06-04T11:09:59.434Z"
+    }
+},
+{
+    "model": "core.contract",
+    "pk": 1,
+    "fields": {
+        "bid": 1,
+        "job_bid": null,
+        "student": 1,
+        "client": 3,
+        "agreed_price": "110.00",
+        "status": "active",
+        "created_at": "2026-06-04T11:09:59.387Z",
+        "completed_at": null,
+        "admin_note": ""
+    }
+},
+{
+    "model": "core.contract",
+    "pk": 2,
+    "fields": {
+        "bid": 2,
+        "job_bid": null,
+        "student": 1,
+        "client": 3,
+        "agreed_price": "70.00",
+        "status": "completed",
+        "created_at": "2026-06-04T11:09:59.411Z",
+        "completed_at": "2026-06-04T11:09:59.410Z",
+        "admin_note": ""
+    }
+},
+{
+    "model": "core.payment",
+    "pk": 1,
+    "fields": {
+        "contract": 1,
+        "amount": "110.00",
+        "status": "held",
+        "created_at": "2026-06-04T11:09:59.392Z"
+    }
+},
+{
+    "model": "core.payment",
+    "pk": 2,
+    "fields": {
+        "contract": 2,
+        "amount": "70.00",
+        "status": "released",
+        "created_at": "2026-06-04T11:09:59.415Z"
+    }
+},
+{
+    "model": "core.review",
+    "pk": 1,
+    "fields": {
+        "contract": 2,
+        "reviewer": 3,
+        "reviewee": 1,
+        "rating": 5,
+        "comment": "Delivered ahead of schedule. Clean SVG files, very professional communication.",
+        "created_at": "2026-06-04T11:09:59.419Z"
+    }
+}
+]
