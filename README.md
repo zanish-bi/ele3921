@@ -461,6 +461,6 @@ studentgig/
 | Member | Responsibility | Status |
 |---|---|---|
 | Zanish | Backend + Frontend — models, views, admin, migrations, templates, tests | Complete |
-| Danjal | Testing, debugging, permissions, navigation flow, contracts flow, GitHub coordination, documentation, and system logic adjustments | Complete |
+| Danjal | Testing, debugging, QA, permissions testing, user workflow validation, GitHub coordination, documentation, video recording/editing, and project feedback | Complete |
 
 See `BACKEND_README.md` for the full backend reference.
