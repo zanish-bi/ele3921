@@ -2,6 +2,8 @@
 
 A student freelance marketplace where students offer services and clients hire them. Built with Django 6 as a university project.
 
+Youtube video link: https://youtu.be/8MF9EErnbNw
+
 ---
 
 ## Quick Start (Any Platform)
